@@ -60,16 +60,40 @@ export interface QuarterlyTrendRecord {
   predicted_risk: string;
 }
 
+export interface RecommendationItem {
+  priority: "High" | "Medium" | "Low" | string;
+  title: string;
+  reasoning: string;
+  metric_threshold: string;
+  next_steps: string[];
+  monitoring_metric: string;
+}
+
+export interface RuleBasedRisk {
+  risk: string;
+  rule: string;
+  explanation: string[];
+  slug?: string;
+  severity?: string;
+  category?: string;
+  metric_name?: string;
+  actual_value?: string;
+  threshold_display?: string;
+  potential_impact?: string;
+  recommendations?: RecommendationItem[];
+  action_plan?: {
+    immediate_actions?: string[];
+    medium_term_actions?: string[];
+  };
+  monitoring_metrics?: string[];
+}
+
 export interface CompanyAnalysisResponse {
   company_id: string;
   latest_quarter: string;
   predicted_risk: string;
   risk_probabilities: Record<string, number>;
-  rule_based_risks: Array<{
-    risk: string;
-    rule: string;
-    explanation: string[];
-  }>;
+  rule_based_risks: RuleBasedRisk[];
   financial_metrics?: FinancialMetrics;
   financial_ratios?: Record<string, number>;
   quarterly_trends?: QuarterlyTrendRecord[];
@@ -230,6 +254,103 @@ export async function getCompanyForecast(companyId: string): Promise<CompanyFore
 
   return res.json();
 }
+
+// ============================================================
+// CASH FLOW FORECASTING TYPES & API METHOD
+// ============================================================
+
+export interface CashFlowHistoricalItem {
+  quarter: string;
+  operating_cash_flow: number;
+  cash: number;
+  debt: number;
+}
+
+export interface CashFlowForecastItem {
+  quarter: string;
+  forecast_operating_cash_flow: number;
+  baseline_quarter: string;
+  baseline_operating_cash_flow: number;
+  horizon: number;
+}
+
+export interface BacktestErrorMetrics {
+  mae: number | null;
+  rmse: number | null;
+  wape_percent: number | null;
+  sample_size: number;
+}
+
+export interface CashFlowBacktestEvaluation {
+  origin_quarter: string;
+  training_quarters_count: number;
+  test_quarters: string[];
+  actuals: number[];
+  candidate_predictions: number[];
+  baseline_predictions: number[];
+  candidate_metrics: BacktestErrorMetrics;
+  baseline_metrics: BacktestErrorMetrics;
+  model_wins: boolean;
+  trend_delta_annual: number;
+}
+
+export interface CashFlowForecastResponse {
+  status: string;
+  company_id: string;
+  company_name: string;
+  forecast_method: string;
+  baseline_method: string;
+  unit: string;
+  latest_historical_quarter: string;
+  latest_operating_cash_flow: number;
+  full_history_trend_delta: number;
+  backtest_evaluation: CashFlowBacktestEvaluation;
+  forecast: CashFlowForecastItem[];
+  historical: CashFlowHistoricalItem[];
+  explanation: string;
+  assumptions: string;
+  data_quality?: {
+    historical_quarters_count: number;
+    earliest_quarter: string;
+    latest_quarter: string;
+    has_negative_cash_flow: boolean;
+    negative_quarters_count: number;
+  };
+}
+
+/**
+ * Get Cash Flow Forecast for selected company
+ * GET /api/forecast/cash-flow/<company_id>/
+ */
+export async function getCompanyCashFlowForecast(companyId: string): Promise<CashFlowForecastResponse> {
+  const trimmedId = companyId.trim();
+  const res = await fetch(`${API_BASE_URL}/forecast/cash-flow/${trimmedId}/`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      throw new Error(`Company not found: No cash flow records available for "${trimmedId}".`);
+    }
+    let errorDetail = `Cash flow forecast request failed with status ${res.status}`;
+    try {
+      const errJson = await res.json();
+      if (errJson.detail) {
+        errorDetail = errJson.detail;
+      } else if (errJson.error) {
+        errorDetail = errJson.error;
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(errorDetail);
+  }
+
+  return res.json();
+}
+
 
 // ------------------------------------------------------------
 // Stubs for future UI integrations (kept decoupled)

@@ -7,7 +7,10 @@ urlpatterns = [
     path('company/<str:company_id>/analysis/', views.company_analysis_view, name='company-analysis'),
     path('company/<str:company_id>/forecast/', views.company_forecast_view, name='company-forecast-alt'),
     path('forecast/<str:company_id>/', views.company_forecast_view, name='company-forecast'),
+    path('forecast/cash-flow/<str:company_id>/', views.company_cash_flow_forecast_view, name='company-cash-flow-forecast'),
+    path('company/<str:company_id>/forecast/cash-flow/', views.company_cash_flow_forecast_view, name='company-cash-flow-forecast-alt'),
     path('company/<str:company_id>/', views.company_details_view, name='company-details'),
+
 
     # Anomaly Detection API endpoints
     path('anomaly-detection/overview/', views.anomaly_overview_view, name='anomaly-overview'),
