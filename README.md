@@ -107,3 +107,18 @@ python validate_csv.py
 ```bash
 python backend/rules/cfo_rules.py
 ```
+
+### Running Revenue Forecasting Test Suite
+```bash
+python backend/test_forecasting.py
+```
+
+### Revenue Forecasting Service
+- Dedicated module: `backend/api/forecasting.py` (and `backend/forecasting.py`)
+- API endpoints:
+  - `GET /api/forecast/<company_id>/`
+  - `GET /api/company/<company_id>/forecast/`
+- Method: Deterministic **Seasonal + Trend Baseline**
+- Caps: YoY growth bounded within `[-10.0%, +15.0%]`
+- 4-Quarter projection mapped to prior-year same-quarter seasonal baselines
+- Trend classification: `Increasing` (> +3%), `Declining` (< -3%), `Stable` (within ±3%)
