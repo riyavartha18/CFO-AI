@@ -9,6 +9,7 @@ import {
   HelpCircle,
   TrendingDown,
   Info,
+  Building2,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -47,7 +48,7 @@ export default function RiskAnalysisPage() {
     let isMounted = true;
     setLoading(true);
     setError(null);
-    setData(null); // Never display stale data from the previously selected company
+    setData(null);
 
     getCompanyAnalysis(companyId)
       .then((res) => {
@@ -72,7 +73,7 @@ export default function RiskAnalysisPage() {
     return (
       <DashboardLayout>
         <LoadingState
-          message="Analyzing financial data..."
+          message="Analyzing financial risk profile..."
           subtext={`Connecting to Django REST API and running ML risk model for ${companyId}`}
         />
       </DashboardLayout>
@@ -86,7 +87,7 @@ export default function RiskAnalysisPage() {
           title={
             error?.includes("not found")
               ? `Company ${companyId} Not Found`
-              : "Backend Unavailable"
+              : "Unable to connect to Smart CFO backend."
           }
           message={error || "No financial records available for this company."}
           onRetry={() => {
@@ -102,16 +103,14 @@ export default function RiskAnalysisPage() {
     );
   }
 
-  // Format real ML probabilities for PieChart
   const pieData = Object.entries(data.risk_probabilities || {}).map(
     ([name, probability]) => ({
       name,
       probability: Number(probability.toFixed(2)),
-      color: RISK_COLORS[name] || "#71717a",
+      color: RISK_COLORS[name] || "#64748b",
     })
   );
 
-  // Format historical quarterly trend records from real database
   const quarterlyHistory = (data.quarterly_trends || []).map((q) => ({
     quarter: q.quarter,
     predictedRisk: q.predicted_risk,
@@ -123,54 +122,54 @@ export default function RiskAnalysisPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                Financial Risk Intelligence & Rule Chaining
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                Financial Risk Intelligence &amp; Rule Chaining
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold border border-blue-200">
+                  {data.company_id}
+                </span>
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {data.company_id}
-              </span>
             </div>
-            <p className="text-xs text-zinc-400 mt-1">
-              Live Random Forest risk prediction & expert rule engine telemetry for quarter {data.latest_quarter}.
+            <p className="text-xs text-slate-500 mt-1">
+              Random Forest risk prediction &amp; expert rule engine telemetry for quarter {data.latest_quarter}.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400">ML Classified Status:</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-slate-500">ML Classified Status:</span>
             <RiskBadge level={data.predicted_risk} size="lg" />
           </div>
         </div>
 
         {/* Top Risk Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Real ML Risk Status */}
-          <div className="rounded-xl bg-[#121620] border border-orange-500/30 p-5 shadow-[0_0_20px_rgba(249,115,22,0.08)] flex flex-col justify-between">
+          {/* ML Risk Status */}
+          <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-sm flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Model Classification
               </span>
-              <ShieldAlert className="w-4 h-4 text-orange-400" />
+              <ShieldAlert className="w-4 h-4 text-blue-600" />
             </div>
             <div className="my-4">
-              <span className="text-3xl font-extrabold text-white block">
+              <span className="text-3xl font-extrabold text-slate-900 block font-mono">
                 {data.predicted_risk}
               </span>
-              <p className="text-xs text-zinc-400 mt-1 font-mono">
-                Latest Evaluated Quarter: {data.latest_quarter}
+              <p className="text-xs text-slate-500 mt-1 font-mono">
+                Latest Quarter: {data.latest_quarter}
               </p>
             </div>
-            <div className="text-[11px] text-emerald-400 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+            <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               <span>Random Forest ML Risk Model v1.0</span>
             </div>
           </div>
 
-          {/* Real ML Probability Distribution */}
-          <div className="rounded-xl bg-[#121620] border border-zinc-800/80 p-5 flex flex-col justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1 block">
+          {/* ML Probability Distribution */}
+          <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-sm flex flex-col justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1 block">
               ML Probability Distribution
             </span>
             <div className="h-36 flex items-center justify-center">
@@ -192,108 +191,107 @@ export default function RiskAnalysisPage() {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#18181b",
-                        border: "1px solid #3f3f46",
-                        borderRadius: "8px",
+                        backgroundColor: "#0f172a",
+                        borderColor: "#334155",
+                        borderRadius: "12px",
                         fontSize: "12px",
+                        color: "#ffffff",
                       }}
                       formatter={(value: any) => [`${value}%`, "Probability"]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <span className="text-xs text-zinc-500">Not available yet</span>
+                <span className="text-xs text-slate-400">Not available yet</span>
               )}
             </div>
-            <div className="flex items-center justify-around text-xs pt-2 border-t border-zinc-800/60">
+            <div className="flex items-center justify-around text-xs pt-2 border-t border-slate-100">
               {pieData.map((p, i) => (
                 <div key={i} className="text-center">
-                  <span className="text-[10px] text-zinc-400 block">{p.name}</span>
-                  <span className="font-bold text-white text-xs">{p.probability}%</span>
+                  <span className="text-[10px] text-slate-500 block font-medium">{p.name}</span>
+                  <span className="font-bold text-slate-900 text-xs font-mono">{p.probability}%</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Real Rule Engine Telemetry */}
-          <div className="rounded-xl bg-[#121620] border border-zinc-800/80 p-5 flex flex-col justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 block">
+          {/* Rule Engine Telemetry */}
+          <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-sm flex flex-col justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
               Rule Engine Status
             </span>
             <div className="my-3 space-y-2 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Total Rules in Engine</span>
-                <span className="font-mono text-zinc-200">10 Rules</span>
+              <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                <span className="text-slate-600">Total Rules in Engine</span>
+                <span className="font-mono text-slate-900 font-bold">10 Rules</span>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-zinc-800/50">
-                <span className="text-zinc-400">Active Risk Triggers</span>
-                <span className="font-mono font-bold text-orange-400">
+              <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                <span className="text-slate-600">Active Risk Triggers</span>
+                <span className="font-mono font-bold text-amber-600">
                   {data.rule_based_risks.length} Detected
                 </span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-zinc-400">Backward Reasoning</span>
-                <span className="font-mono text-emerald-400">Verified</span>
+                <span className="text-slate-600">Backward Reasoning</span>
+                <span className="font-mono font-bold text-emerald-600">Verified</span>
               </div>
             </div>
-            <div className="p-2 rounded bg-zinc-900 text-[11px] text-zinc-400 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
-              <span>Forward & Backward chaining active</span>
+            <div className="p-2 rounded.xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+              <span>Forward &amp; Backward chaining active</span>
             </div>
           </div>
         </div>
 
-        {/* Historical Progression from Database */}
+        {/* Historical Progression */}
         {quarterlyHistory.length > 0 && (
           <ChartCard
-            title="Historical Quarterly Revenue & Cash Profile"
+            title="Historical Quarterly Revenue &amp; Cash Profile"
             subtitle={`Actual records for ${data.company_id} from Supabase (${quarterlyHistory.length} quarters)`}
             action={
-              <span className="text-xs text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800 font-mono">
+              <span className="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 font-mono">
                 {quarterlyHistory[0]?.quarter} → {quarterlyHistory[quarterlyHistory.length - 1]?.quarter}
               </span>
             }
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={quarterlyHistory}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.6} />
-                <XAxis dataKey="quarter" stroke="#71717a" fontSize={11} />
-                <YAxis stroke="#71717a" fontSize={11} />
+              <LineChart data={quarterlyHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="quarter" stroke="#64748b" fontSize={11} tickLine={false} />
+                <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#18181b",
-                    border: "1px solid #3f3f46",
-                    borderRadius: "8px",
+                    backgroundColor: "#0f172a",
+                    borderColor: "#334155",
+                    borderRadius: "12px",
                     fontSize: "12px",
+                    color: "#ffffff",
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="revenue"
                   name="Revenue (Cr)"
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  dot={{ r: 2, fill: "#f97316" }}
+                  stroke="#3b82f6"
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: "#3b82f6" }}
                 />
                 <Line
                   type="monotone"
                   dataKey="cash"
                   name="Cash (Cr)"
                   stroke="#10b981"
-                  strokeWidth={2}
-                  dot={{ r: 2, fill: "#10b981" }}
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: "#10b981" }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
         )}
 
-        {/* Real Rule-Based Risks & Backward Chaining Explanations */}
+        {/* Rule-Based Risks & Backward Chaining Explanations */}
         <DashboardCard
-          title="Rule Engine Findings & Backward Chaining Explanations"
+          title="Rule Engine Findings &amp; Backward Chaining Explanations"
           subtitle={`Deterministic risk conditions evaluated against ${data.company_id} financials`}
         >
           {data.rule_based_risks.length > 0 ? (
@@ -301,14 +299,14 @@ export default function RiskAnalysisPage() {
               {data.rule_based_risks.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-3"
+                  className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-200 text-slate-800">
                         Rule Trigger
                       </span>
-                      <h3 className="text-sm font-semibold text-zinc-100">
+                      <h3 className="text-sm font-bold text-slate-900">
                         {item.risk}
                       </h3>
                     </div>
@@ -316,22 +314,22 @@ export default function RiskAnalysisPage() {
                   </div>
 
                   {/* Rule Name */}
-                  <div className="p-3 rounded-lg bg-[#121620] border border-zinc-800/60 text-xs">
-                    <span className="font-semibold text-zinc-400 block text-[10px] uppercase tracking-wider mb-1">
+                  <div className="p-3 rounded-xl bg-white border border-slate-200/80 text-xs">
+                    <span className="font-bold text-slate-500 block text-[10px] uppercase tracking-wider mb-1">
                       Rule Evaluated:
                     </span>
-                    <p className="text-zinc-200">{item.rule}</p>
+                    <p className="text-slate-800 font-medium">{item.rule}</p>
                   </div>
 
                   {/* Backward Explanation */}
-                  <div className="p-3 rounded-lg bg-orange-500/5 border border-orange-500/20 text-xs">
-                    <div className="flex items-center gap-1.5 text-orange-400 font-semibold text-[10px] uppercase tracking-wider mb-1">
+                  <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 text-xs">
+                    <div className="flex items-center gap-1.5 text-blue-700 font-bold text-[10px] uppercase tracking-wider mb-1">
                       <HelpCircle className="w-3.5 h-3.5" />
                       Backward Chaining Root-Cause Explanation:
                     </div>
                     <div className="space-y-1">
                       {item.explanation.map((exp, expIdx) => (
-                        <p key={expIdx} className="text-zinc-200">
+                        <p key={expIdx} className="text-slate-800 font-medium">
                           → {exp}
                         </p>
                       ))}
@@ -341,12 +339,12 @@ export default function RiskAnalysisPage() {
               ))}
             </div>
           ) : (
-            <div className="p-8 text-center rounded-xl bg-zinc-900/40 border border-zinc-800/60">
-              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-              <h4 className="text-sm font-semibold text-zinc-200">
+            <div className="p-8 text-center rounded-2xl bg-emerald-50/50 border border-emerald-200">
+              <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+              <h4 className="text-sm font-bold text-slate-900">
                 No Rule-Based Risks Detected
               </h4>
-              <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto">
+              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
                 All 10 production financial rules (Current Ratio, Debt-to-Equity, Interest Coverage, Profitability, and Cash Flow) are within safe operating thresholds for quarter {data.latest_quarter}.
               </p>
             </div>

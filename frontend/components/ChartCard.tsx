@@ -16,12 +16,12 @@ export function ChartCard({
   height = "h-72",
 }: ChartCardProps) {
   return (
-    <div className="rounded-xl bg-[#121620] border border-zinc-800/80 p-5 flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-sm flex flex-col justify-between">
+      <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
+          <h3 className="text-sm font-bold text-slate-900 tracking-tight">{title}</h3>
           {subtitle && (
-            <p className="text-xs text-zinc-400 mt-0.5">{subtitle}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
           )}
         </div>
         {action && <div>{action}</div>}

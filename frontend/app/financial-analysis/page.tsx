@@ -7,6 +7,7 @@ import {
   Activity,
   ArrowUpRight,
   TrendingUp,
+  Building2,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -16,7 +17,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Legend,
 } from "recharts";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { DashboardCard } from "@/components/DashboardCard";
@@ -39,7 +39,7 @@ export default function FinancialAnalysisPage() {
     let isMounted = true;
     setLoading(true);
     setError(null);
-    setData(null); // Never display stale data from the previously selected company
+    setData(null);
 
     getCompanyAnalysis(companyId)
       .then((res) => {
@@ -64,7 +64,7 @@ export default function FinancialAnalysisPage() {
     return (
       <DashboardLayout>
         <LoadingState
-          message="Analyzing financial data..."
+          message="Analyzing financial statements..."
           subtext={`Retrieving Supabase statements and calculating 15 financial ratios for ${companyId}`}
         />
       </DashboardLayout>
@@ -98,7 +98,6 @@ export default function FinancialAnalysisPage() {
   const ratios = data.financial_ratios || {};
   const quarterlyTrends = data.quarterly_trends || [];
 
-  // Build real Income Statement rows directly from backend calculations
   const incomeStatement = fm
     ? [
         { item: "Total Revenue", amount: `₹${fm.revenue.toFixed(2)} Cr`, pct: "100.0%" },
@@ -113,7 +112,6 @@ export default function FinancialAnalysisPage() {
       ]
     : [];
 
-  // Build real Balance Sheet rows directly from backend calculations
   const balanceSheet = fm
     ? [
         { item: "Cash & Equivalents", amount: `₹${fm.cash.toFixed(2)} Cr`, category: "Current Assets" },
@@ -129,7 +127,6 @@ export default function FinancialAnalysisPage() {
       ]
     : [];
 
-  // Real Cash Flow rows
   const cashFlow = fm
     ? [
         { item: "Operating Cash Flow", amount: `₹${fm.operating_cash_flow.toFixed(2)} Cr`, status: fm.operating_cash_flow >= 0 ? "Positive" : "Negative" },
@@ -138,7 +135,6 @@ export default function FinancialAnalysisPage() {
       ]
     : [];
 
-  // 15 Real Ratios computed by backend
   const ratioItems = Object.entries(ratios).map(([feature, val]) => ({
     name: feature.replace(/_/g, " ").toUpperCase(),
     value: val.toString(),
@@ -148,24 +144,24 @@ export default function FinancialAnalysisPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
                 Financial Statement Analysis
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold border border-blue-200">
+                  {data.company_id}
+                </span>
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {data.company_id}
-              </span>
             </div>
-            <p className="text-xs text-zinc-400 mt-1">
-              Real calculated financial metrics and 15 feature ratios for quarter {data.latest_quarter}.
+            <p className="text-xs text-slate-500 mt-1">
+              Calculated financial metrics and 15 feature ratios for quarter {data.latest_quarter}.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
-              Evaluated: <strong className="text-zinc-200">{data.latest_quarter}</strong>
+            <span className="text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/90">
+              Evaluated Quarter: <strong className="text-slate-900 font-mono">{data.latest_quarter}</strong>
             </span>
           </div>
         </div>
@@ -173,33 +169,24 @@ export default function FinancialAnalysisPage() {
         {/* Real Quarterly Progression Chart */}
         {quarterlyTrends.length > 0 && (
           <ChartCard
-            title="Real Quarterly Financial Momentum"
+            title="Quarterly Financial Momentum"
             subtitle={`Historical Revenue & Cash records for ${data.company_id} from Supabase (${quarterlyTrends.length} quarters)`}
-            action={
-              <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-xs text-orange-400">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-orange-500" /> Revenue
-                </span>
-                <span className="flex items-center gap-1.5 text-xs text-emerald-400 ml-2">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Cash Flow
-                </span>
-              </div>
-            }
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={quarterlyTrends.slice(-8)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.6} />
-                <XAxis dataKey="quarter" stroke="#71717a" fontSize={11} />
-                <YAxis stroke="#71717a" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="quarter" stroke="#64748b" fontSize={11} tickLine={false} />
+                <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#18181b",
-                    border: "1px solid #3f3f46",
-                    borderRadius: "8px",
+                    backgroundColor: "#0f172a",
+                    borderColor: "#334155",
+                    borderRadius: "12px",
                     fontSize: "12px",
+                    color: "#ffffff",
                   }}
                 />
-                <Bar dataKey="revenue" name="Revenue (Cr)" fill="#f97316" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="revenue" name="Revenue (Cr)" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="cash" name="Cash (Cr)" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -207,7 +194,7 @@ export default function FinancialAnalysisPage() {
         )}
 
         {/* Section Navigation Tabs */}
-        <div className="flex items-center space-x-2 border-b border-zinc-800 pb-2 overflow-x-auto">
+        <div className="flex items-center space-x-2 border-b border-slate-200 pb-2 overflow-x-auto">
           {[
             { id: "income", label: "Income Statement", icon: FileSpreadsheet },
             { id: "balance", label: "Balance Sheet", icon: PieChart },
@@ -220,10 +207,10 @@ export default function FinancialAnalysisPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? "bg-orange-500/10 text-orange-400 border border-orange-500/30"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -233,34 +220,34 @@ export default function FinancialAnalysisPage() {
           })}
         </div>
 
-        {/* Tab 1: Real Income Statement */}
+        {/* Tab 1: Income Statement */}
         {activeTab === "income" && (
           <DashboardCard
-            title="Real Income Statement Breakdown"
+            title="Income Statement Breakdown"
             subtitle={`Calculated from database records for ${data.company_id} (${data.latest_quarter})`}
           >
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-800 text-zinc-400 uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-4 font-semibold">Financial Item</th>
-                    <th className="py-3 px-4 font-semibold text-right">Amount</th>
-                    <th className="py-3 px-4 font-semibold text-right">% of Revenue</th>
+                  <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4 font-bold">Financial Item</th>
+                    <th className="py-3 px-4 font-bold text-right">Amount</th>
+                    <th className="py-3 px-4 font-bold text-right">% of Revenue</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60">
+                <tbody className="divide-y divide-slate-100">
                   {incomeStatement.map((row, i) => (
                     <tr
                       key={i}
                       className={
                         row.item.includes("Net Profit") || row.item === "EBITDA"
-                          ? "bg-zinc-800/40 font-semibold text-orange-400"
-                          : "text-zinc-300 hover:bg-zinc-900/40"
+                          ? "bg-blue-50/60 font-bold text-blue-900"
+                          : "text-slate-700 hover:bg-slate-50"
                       }
                     >
                       <td className="py-3 px-4">{row.item}</td>
                       <td className="py-3 px-4 text-right font-mono">{row.amount}</td>
-                      <td className="py-3 px-4 text-right text-zinc-400">{row.pct}</td>
+                      <td className="py-3 px-4 text-right text-slate-500">{row.pct}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -269,32 +256,32 @@ export default function FinancialAnalysisPage() {
           </DashboardCard>
         )}
 
-        {/* Tab 2: Real Balance Sheet */}
+        {/* Tab 2: Balance Sheet */}
         {activeTab === "balance" && (
           <DashboardCard
-            title="Real Balance Sheet Position"
+            title="Balance Sheet Position"
             subtitle={`Calculated from database records for ${data.company_id} (${data.latest_quarter})`}
           >
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-800 text-zinc-400 uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-4 font-semibold">Classification</th>
-                    <th className="py-3 px-4 font-semibold">Account Item</th>
-                    <th className="py-3 px-4 font-semibold text-right">Book Value</th>
+                  <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4 font-bold">Classification</th>
+                    <th className="py-3 px-4 font-bold">Account Item</th>
+                    <th className="py-3 px-4 font-bold text-right">Book Value</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60">
+                <tbody className="divide-y divide-slate-100">
                   {balanceSheet.map((row, i) => (
                     <tr
                       key={i}
                       className={
                         row.category.includes("Total")
-                          ? "bg-zinc-800/50 font-bold text-white"
-                          : "text-zinc-300 hover:bg-zinc-900/40"
+                          ? "bg-slate-100 font-bold text-slate-900"
+                          : "text-slate-700 hover:bg-slate-50"
                       }
                     >
-                      <td className="py-3 px-4 text-zinc-400">{row.category}</td>
+                      <td className="py-3 px-4 text-slate-500 font-semibold">{row.category}</td>
                       <td className="py-3 px-4 font-medium">{row.item}</td>
                       <td className="py-3 px-4 text-right font-mono">{row.amount}</td>
                     </tr>
@@ -305,25 +292,25 @@ export default function FinancialAnalysisPage() {
           </DashboardCard>
         )}
 
-        {/* Tab 3: Real Cash Flow */}
+        {/* Tab 3: Cash Flow */}
         {activeTab === "cashflow" && (
           <DashboardCard
-            title="Real Cash Flow Dynamics"
+            title="Cash Flow Dynamics"
             subtitle={`Calculated from database records for ${data.company_id} (${data.latest_quarter})`}
           >
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {cashFlow.map((cf, i) => (
                 <div
                   key={i}
-                  className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800"
+                  className="p-4 rounded-xl bg-slate-50 border border-slate-200/90"
                 >
-                  <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                     {cf.item}
                   </span>
-                  <span className="text-xl font-bold text-white mt-2 block font-mono">
+                  <span className="text-xl font-extrabold text-slate-900 mt-2 block font-mono">
                     {cf.amount}
                   </span>
-                  <span className="text-xs text-orange-400 mt-1 block">
+                  <span className="text-xs text-blue-600 font-semibold mt-1 block">
                     {cf.status}
                   </span>
                 </div>
@@ -332,30 +319,30 @@ export default function FinancialAnalysisPage() {
           </DashboardCard>
         )}
 
-        {/* Tab 4: Real 15 Financial Ratios */}
+        {/* Tab 4: 15 Financial Ratios */}
         {activeTab === "ratios" && (
           <DashboardCard
             title="15 Engineered Financial Ratios"
-            subtitle="Real feature values computed by the backend feature engineering pipeline"
+            subtitle="Feature values computed by the backend feature engineering pipeline"
           >
             {ratioItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ratioItems.map((ratio, i) => (
                   <div
                     key={i}
-                    className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800"
+                    className="p-4 rounded-xl bg-slate-50 border border-slate-200/90"
                   >
-                    <span className="text-xs text-zinc-400 font-mono block">
+                    <span className="text-xs text-slate-500 font-bold font-mono block">
                       {ratio.name}
                     </span>
-                    <div className="mt-2 text-xl font-bold text-white font-mono">
+                    <div className="mt-2 text-xl font-extrabold text-slate-900 font-mono">
                       {ratio.value}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-xs text-zinc-400 text-center py-6">
+              <div className="text-xs text-slate-500 text-center py-6">
                 Ratios not available yet for this company.
               </div>
             )}

@@ -21,20 +21,20 @@ export function MetricCard({
   badge,
 }: MetricCardProps) {
   return (
-    <div className="rounded-xl bg-[#121620] border border-zinc-800/80 p-5 hover:border-zinc-700/80 transition-all duration-200">
+    <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-sm hover:shadow-md transition-all duration-200">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
           {label}
         </span>
         {icon && (
-          <div className="p-2 rounded-lg bg-zinc-800/50 text-orange-400">
+          <div className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
             {icon}
           </div>
         )}
       </div>
 
       <div className="mt-3 flex items-baseline justify-between">
-        <span className="text-2xl font-bold tracking-tight text-white">
+        <span className="text-2xl font-extrabold tracking-tight text-slate-900 font-mono">
           {value}
         </span>
         {badge}
@@ -44,12 +44,12 @@ export function MetricCard({
         <div className="mt-3 flex items-center gap-2 text-xs">
           {change && (
             <span
-              className={`inline-flex items-center font-medium ${
+              className={`inline-flex items-center font-bold px-2 py-0.5 rounded-lg border ${
                 isPositive === undefined
-                  ? "text-zinc-400"
+                  ? "bg-slate-100 text-slate-700 border-slate-200"
                   : isPositive
-                  ? "text-emerald-400"
-                  : "text-rose-400"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
               }`}
             >
               {isPositive === undefined ? (

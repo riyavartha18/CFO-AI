@@ -102,10 +102,10 @@ export function FileUpload({
         onClick={() => inputRef.current?.click()}
         className={`relative flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
           dragActive
-            ? "border-orange-500 bg-orange-500/5 shadow-[0_0_20px_rgba(249,115,22,0.1)]"
+            ? "border-blue-500 bg-blue-50/50 shadow-xs"
             : selectedFile
-            ? "border-zinc-700 bg-zinc-900/60"
-            : "border-zinc-800 hover:border-zinc-700 bg-zinc-900/40"
+            ? "border-slate-300 bg-white shadow-xs"
+            : "border-slate-200 hover:border-slate-300 bg-slate-50/70"
         }`}
       >
         <input
@@ -116,30 +116,30 @@ export function FileUpload({
           className="hidden"
         />
 
-        <div className="p-3.5 rounded-full bg-zinc-800/80 text-orange-400 mb-3 shadow-inner">
+        <div className="p-3.5 rounded-full bg-blue-50 text-blue-600 mb-3 shadow-xs">
           <UploadCloud className="w-7 h-7" />
         </div>
 
-        <p className="text-sm font-medium text-zinc-200 text-center">
+        <p className="text-sm font-medium text-slate-800 text-center">
           Drag & drop your quarterly financial CSV here, or{" "}
-          <span className="text-orange-400 hover:underline">browse files</span>
+          <span className="text-blue-600 hover:underline">browse files</span>
         </p>
-        <p className="text-xs text-zinc-400 mt-1">
+        <p className="text-xs text-slate-500 mt-1">
           Supports 20 standardized financial columns (e.g. revenue_cr, cogs_cr, debts, cash)
         </p>
       </div>
 
       {selectedFile && (
-        <div className="flex items-center justify-between p-3.5 rounded-lg bg-[#151a24] border border-zinc-800">
+        <div className="flex items-center justify-between p-3.5 rounded-lg bg-white border border-slate-200 shadow-xs">
           <div className="flex items-center space-x-3 truncate">
-            <div className="p-2 rounded bg-zinc-800 text-orange-400">
+            <div className="p-2 rounded bg-slate-100 text-blue-600">
               <FileText className="w-4 h-4" />
             </div>
             <div className="truncate">
-              <p className="text-sm font-medium text-zinc-100 truncate">
+              <p className="text-sm font-medium text-slate-900 truncate">
                 {selectedFile.name}
               </p>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-slate-500">
                 {(selectedFile.size / 1024).toFixed(1)} KB
               </p>
             </div>
@@ -151,13 +151,14 @@ export function FileUpload({
               size="sm"
               onClick={handleUploadClick}
               isLoading={isUploading}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               Upload to Backend
             </Button>
             <button
               type="button"
               onClick={handleClear}
-              className="p-1.5 text-zinc-400 hover:text-zinc-200 rounded-md hover:bg-zinc-800"
+              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100"
             >
               <X className="w-4 h-4" />
             </button>
@@ -169,10 +170,10 @@ export function FileUpload({
         <div
           className={`flex items-start gap-2.5 p-3 rounded-lg text-xs ${
             uploadStatus === "success"
-              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
               : uploadStatus === "error"
-              ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-              : "bg-zinc-800/60 text-zinc-300 border border-zinc-700/50"
+              ? "bg-rose-50 text-rose-700 border border-rose-200"
+              : "bg-slate-50 text-slate-700 border border-slate-200"
           }`}
         >
           {uploadStatus === "success" ? (

@@ -7,9 +7,11 @@ import {
   AlertCircle,
   CheckCircle2,
   ShieldCheck,
+  Building2,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { DashboardCard } from "@/components/DashboardCard";
+import { useCompany } from "@/lib/CompanyContext";
 
 const REQUIRED_CSV_FIELDS = [
   "company_id",
@@ -34,8 +36,6 @@ const REQUIRED_CSV_FIELDS = [
   "financing_cash_flow_cr",
 ];
 
-import { useCompany } from "@/lib/CompanyContext";
-
 export default function CSVUploadPage() {
   const { companyId } = useCompany();
 
@@ -43,114 +43,84 @@ export default function CSVUploadPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
                 Financial Statement CSV Ingestion
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold border border-amber-200 flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-amber-600" /> Web Upload Coming Soon
+                </span>
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
-                Target: {companyId}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Web Upload Coming Soon
-              </span>
             </div>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Automated 20-point CSV validation and database ingestion for company financial quarters.
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200/90 rounded-xl px-3.5 py-2">
+            <Building2 className="w-4 h-4 text-blue-600" />
+            <span className="text-xs font-semibold text-slate-600">Target:</span>
+            <span className="text-xs font-bold text-slate-900 font-mono">{companyId}</span>
+          </div>
+        </div>
+
+        {/* Notice Banner */}
+        <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm text-xs text-slate-700 flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex-shrink-0">
+            <AlertCircle className="w-4 h-4" />
+          </div>
+          <div className="space-y-1">
+            <span className="font-bold text-slate-900 block text-sm">
+              Direct Database Connection Active for {companyId}
+            </span>
+            <p className="text-slate-500 leading-relaxed">
+              Financial data for <strong>{companyId}</strong> is loaded directly from PostgreSQL/Supabase tables. The browser CSV upload dropzone interface is being wired to backend API endpoints. You can currently analyze {companyId}, C001, C002, and ABC123 live across all dashboard pages.
             </p>
           </div>
         </div>
 
-        {/* Coming Soon Notice Banner */}
-        <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs text-amber-200/90 flex items-start gap-3">
-          <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-          <div className="leading-relaxed">
-            <span className="font-semibold block text-amber-300 mb-0.5">
-              Backend CSV Ingestion API in Development
-            </span>
-            The 20-point validation logic is fully implemented on the backend in Python (<code>backend/validate_csv.py</code>). The REST API endpoint connecting browser file uploads directly into Supabase is currently being finalized. Browser upload is disabled to prevent unvalidated ingestion.
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Upload Disabled Preview (7 cols) */}
-          <div className="lg:col-span-7 space-y-4">
+          {/* Dropzone Container */}
+          <div className="lg:col-span-7">
             <DashboardCard
-              title="Upload Financial File (Preview)"
-              subtitle="Drag & drop interface will activate upon Django upload API deployment"
+              title="CSV Statement Upload (Preview)"
+              subtitle="Drag & drop quarter statement CSV files for instant validation"
             >
-              <div className="flex flex-col items-center justify-center p-12 rounded-xl border-2 border-dashed border-zinc-800 bg-zinc-900/30 text-center opacity-60 select-none">
-                <div className="p-3.5 rounded-full bg-zinc-800 text-zinc-500 mb-3">
-                  <UploadCloud className="w-7 h-7" />
+              <div className="border-2 border-dashed border-slate-200 rounded-xl p-12 text-center space-y-3 bg-slate-50 hover:bg-slate-100/50 transition-colors">
+                <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto text-blue-600">
+                  <UploadCloud className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-medium text-zinc-400">
-                  Web upload disabled (Coming Soon)
-                </p>
-                <p className="text-xs text-zinc-500 mt-1 max-w-sm">
-                  Run validation locally via terminal: <code>python backend/validate_csv.py</code>
-                </p>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Upload Financial Statement CSV
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                    Supported format: .csv containing 20 financial fields in INR Crores.
+                  </p>
+                </div>
+                <button disabled className="px-4 py-2 bg-slate-200 text-slate-500 font-semibold text-xs rounded-xl cursor-not-allowed">
+                  Select CSV File (In Development)
+                </button>
               </div>
             </DashboardCard>
-
-            {/* Validation Rules Checklist (Ready on Backend) */}
-            <div className="rounded-xl bg-[#121620] border border-zinc-800/80 p-5 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Implemented Backend Python Validation Rules</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-zinc-400">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>20 Required Column Presence</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Zero Unexpected Extra Columns</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>No Null / Empty Cells</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Single Consistent Company ID</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Unique Non-Duplicate Quarters</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Quarter Format Regex (^\d&#123;4&#125;Q[1-4]$)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>18 Numeric Float Validations</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Non-Negative Revenue Check</span>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Expected Columns Reference (5 cols) */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* Schema Guide */}
+          <div className="lg:col-span-5">
             <DashboardCard
-              title="Required CSV Schema Reference"
-              subtitle="20 standardized header columns required by ML analysis engine"
+              title="Required CSV Column Schema"
+              subtitle="20 standard statement parameters expected by engine"
             >
-              <div className="space-y-1.5 max-h-[460px] overflow-y-auto pr-1">
-                {REQUIRED_CSV_FIELDS.map((col, idx) => (
+              <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
+                {REQUIRED_CSV_FIELDS.map((field, idx) => (
                   <div
                     key={idx}
-                    className="p-2 rounded bg-zinc-900/60 border border-zinc-800/80 font-mono text-[11px] text-zinc-300 flex items-center justify-between"
+                    className="p-2 rounded-lg bg-slate-50 border border-slate-200/90 text-xs font-mono font-medium text-slate-700 flex items-center justify-between"
                   >
-                    <span>{col}</span>
-                    <span className="text-[10px] text-zinc-500 font-sans">
-                      {idx < 2 ? "Text" : "Float (Cr)"}
+                    <span>{field}</span>
+                    <span className="text-[10px] text-emerald-700 font-sans font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      Required
                     </span>
                   </div>
                 ))}

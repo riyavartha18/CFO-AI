@@ -13,13 +13,13 @@ import {
   UploadCloud,
   ChevronRight,
   CheckCircle2,
+  Building2,
+  Activity,
 } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -46,7 +46,7 @@ export default function DashboardPage() {
     let isMounted = true;
     setLoading(true);
     setError(null);
-    setData(null); // Never display stale data from the previously selected company
+    setData(null);
 
     getCompanyAnalysis(companyId)
       .then((res) => {
@@ -109,47 +109,48 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Page Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
                 Executive Financial Overview
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold border border-blue-200">
+                  {data.company_id}
+                </span>
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {data.company_id}
-              </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800">
+              <span className="px-2.5 py-0.5 rounded text-xs font-mono font-semibold text-slate-600 bg-slate-100 border border-slate-200">
                 Quarter: {data.latest_quarter}
               </span>
             </div>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Real financial data retrieved from Supabase and analyzed via Random Forest ML + Rule Engine.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <Link href="/risk-analysis">
-              <Button size="sm">
-                View Risk Breakdown <ChevronRight className="w-3.5 h-3.5 ml-1" />
-              </Button>
+              <button className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer">
+                <span>View Risk Breakdown</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </Link>
           </div>
         </div>
 
         {/* Top Metric Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {/* Real ML Risk Card */}
-          <div className="rounded-xl bg-[#121620] border border-orange-500/30 p-5 shadow-[0_0_20px_rgba(249,115,22,0.08)] flex flex-col justify-between">
+          {/* ML Risk Card */}
+          <div className="rounded-2xl bg-white border border-slate-200/90 p-5 shadow-sm flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 Current ML Risk
               </span>
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="my-2">
               <RiskBadge level={data.predicted_risk} size="lg" />
             </div>
-            <span className="text-[11px] text-zinc-400">
+            <span className="text-[11px] text-slate-400">
               Confidence: {lowRiskProb.toFixed(1)}%
             </span>
           </div>
@@ -157,42 +158,42 @@ export default function DashboardPage() {
           {/* Real Revenue */}
           <MetricCard
             label="Total Revenue"
-            value={fm ? `₹${fm.revenue.toFixed(1)} Cr` : "Not available yet"}
+            value={fm ? `₹${fm.revenue.toFixed(1)} Cr` : "N/A"}
             subtext={`Actual for ${data.latest_quarter}`}
-            icon={<DollarSign className="w-4 h-4" />}
+            icon={<DollarSign className="w-4 h-4 text-blue-600" />}
           />
 
           {/* Real Net Profit */}
           <MetricCard
             label="Net Profit (PAT)"
-            value={fm ? `₹${fm.net_profit.toFixed(1)} Cr` : "Not available yet"}
+            value={fm ? `₹${fm.net_profit.toFixed(1)} Cr` : "N/A"}
             subtext={
               fm
                 ? `Margin: ${((fm.net_profit / (fm.revenue || 1)) * 100).toFixed(1)}%`
-                : "Not available yet"
+                : "N/A"
             }
             isPositive={fm ? fm.net_profit >= 0 : undefined}
-            icon={<TrendingUp className="w-4 h-4" />}
+            icon={<TrendingUp className="w-4 h-4 text-emerald-600" />}
           />
 
           {/* Real Cash */}
           <MetricCard
-            label="Cash & Equivalents"
-            value={fm ? `₹${fm.cash.toFixed(1)} Cr` : "Not available yet"}
+            label="Cash &amp; Equivalents"
+            value={fm ? `₹${fm.cash.toFixed(1)} Cr` : "N/A"}
             subtext="Available Liquidity"
-            icon={<Wallet className="w-4 h-4" />}
+            icon={<Wallet className="w-4 h-4 text-indigo-600" />}
           />
 
           {/* Real Total Debt */}
           <MetricCard
             label="Total Debt"
-            value={fm ? `₹${fm.total_debt.toFixed(1)} Cr` : "Not available yet"}
+            value={fm ? `₹${fm.total_debt.toFixed(1)} Cr` : "N/A"}
             subtext={
               fm && fm.equity
                 ? `D/E: ${(fm.total_debt / fm.equity).toFixed(2)}x`
                 : "Total Leverage"
             }
-            icon={<CreditCard className="w-4 h-4" />}
+            icon={<CreditCard className="w-4 h-4 text-purple-600" />}
           />
         </div>
 
@@ -204,7 +205,7 @@ export default function DashboardPage() {
                 title="Revenue vs. Net Profit Performance"
                 subtitle={`Historical progression for ${data.company_id} (₹ in Crores)`}
                 action={
-                  <span className="text-xs text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800 font-mono">
+                  <span className="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 font-mono">
                     {quarterlyTrends.length} Quarters
                   </span>
                 }
@@ -216,31 +217,32 @@ export default function DashboardPage() {
                   >
                     <defs>
                       <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#f97316" stopOpacity={0.0} />
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
                       </linearGradient>
                       <linearGradient id="patGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
                         <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.6} />
-                    <XAxis dataKey="quarter" stroke="#71717a" fontSize={11} />
-                    <YAxis stroke="#71717a" fontSize={11} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                    <XAxis dataKey="quarter" stroke="#64748b" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#18181b",
-                        border: "1px solid #3f3f46",
-                        borderRadius: "8px",
+                        backgroundColor: "#0f172a",
+                        borderColor: "#334155",
+                        borderRadius: "12px",
                         fontSize: "12px",
+                        color: "#ffffff",
                       }}
                     />
                     <Area
                       type="monotone"
                       dataKey="revenue"
                       name="Revenue (Cr)"
-                      stroke="#f97316"
-                      strokeWidth={2}
+                      stroke="#3b82f6"
+                      strokeWidth={2.5}
                       fillOpacity={1}
                       fill="url(#revGrad)"
                     />
@@ -249,7 +251,7 @@ export default function DashboardPage() {
                       dataKey="net_profit"
                       name="Net Profit (Cr)"
                       stroke="#10b981"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       fillOpacity={1}
                       fill="url(#patGrad)"
                     />
@@ -258,43 +260,44 @@ export default function DashboardPage() {
               </ChartCard>
             </div>
 
-            {/* Cash vs Debt Bar Comparison */}
+            {/* Cash vs Debt Area Comparison */}
             <ChartCard
               title="Liquidity vs. Debt Position"
-              subtitle="Latest quarter balance sheet balance (₹ in Crores)"
+              subtitle="Quarterly balance sheet progression (₹ in Crores)"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={quarterlyTrends.slice(-8)}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.6} />
-                  <XAxis dataKey="quarter" stroke="#71717a" fontSize={11} />
-                  <YAxis stroke="#71717a" fontSize={11} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                  <XAxis dataKey="quarter" stroke="#64748b" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#18181b",
-                      border: "1px solid #3f3f46",
-                      borderRadius: "8px",
+                      backgroundColor: "#0f172a",
+                      borderColor: "#334155",
+                      borderRadius: "12px",
                       fontSize: "12px",
+                      color: "#ffffff",
                     }}
                   />
                   <Area
                     type="monotone"
                     dataKey="cash"
                     name="Cash Reserves (Cr)"
-                    stroke="#38bdf8"
+                    stroke="#0ea5e9"
                     strokeWidth={2}
-                    fill="#38bdf8"
+                    fill="#0ea5e9"
                     fillOpacity={0.15}
                   />
                   <Area
                     type="monotone"
                     dataKey="total_debt"
                     name="Total Debt (Cr)"
-                    stroke="#ef4444"
+                    stroke="#f43f5e"
                     strokeWidth={2}
-                    fill="#ef4444"
+                    fill="#f43f5e"
                     fillOpacity={0.15}
                   />
                 </AreaChart>
@@ -303,14 +306,14 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Real Rule-Engine Insights */}
+        {/* Rule-Engine Insights */}
         <DashboardCard
-          title="Rule Engine Findings & Insights"
+          title="Rule Engine Findings &amp; Insights"
           subtitle={`Evaluated conditions for ${data.company_id} (${data.latest_quarter})`}
           action={
             <Link
               href="/risk-analysis"
-              className="text-xs text-orange-400 hover:underline inline-flex items-center gap-1 font-medium"
+              className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold"
             >
               Deep Dive <ChevronRight className="w-3.5 h-3.5" />
             </Link>
@@ -321,16 +324,16 @@ export default function DashboardPage() {
               {data.rule_based_risks.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 flex items-start gap-3"
+                  className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-start gap-3"
                 >
-                  <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="text-xs font-semibold text-zinc-100">
+                    <h4 className="text-xs font-bold text-slate-900">
                       {item.risk} ({item.rule})
                     </h4>
                     <div className="space-y-0.5 mt-1">
                       {item.explanation.map((exp, expIdx) => (
-                        <p key={expIdx} className="text-xs text-zinc-400">
+                        <p key={expIdx} className="text-xs text-slate-600">
                           {exp}
                         </p>
                       ))}
@@ -340,8 +343,8 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800 flex items-center gap-3 text-xs text-zinc-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center gap-3 text-xs text-emerald-800">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span>
                 All 10 production financial rules (Current Ratio, Debt-to-Equity, Interest Coverage, Profitability, and Cash Flow) are within safe operating limits.
               </span>

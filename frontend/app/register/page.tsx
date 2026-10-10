@@ -63,29 +63,29 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-zinc-100 flex flex-col justify-center items-center px-4 sm:px-6 py-12">
+    <div className="min-h-screen bg-[#F5F8FC] text-slate-900 flex flex-col justify-center items-center px-4 sm:px-6 py-12">
       <div className="w-full max-w-lg space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2.5 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-xs">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl tracking-tight text-white">
-              SMART <span className="text-orange-500">CFO</span>
+            <span className="font-bold text-xl tracking-tight text-slate-900">
+              Fin<span className="text-blue-600">Pilot</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Register your company
           </h1>
-          <p className="text-xs text-zinc-400 mt-1.5">
+          <p className="text-xs text-slate-500 mt-1.5">
             Configure dynamic multi-company risk tracking & financial intelligence
           </p>
         </div>
 
-        <div className="rounded-2xl bg-[#121620] border border-zinc-800/90 p-7 shadow-2xl">
+        <div className="rounded-2xl bg-white border border-slate-200/90 p-7 shadow-xs">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                 {error}
               </div>
             )}
@@ -125,18 +125,18 @@ export default function RegisterPage() {
               />
 
               <div className="w-full space-y-1.5">
-                <label className="block text-xs font-medium text-zinc-300 tracking-wide uppercase">
+                <label className="block text-xs font-medium text-slate-700 tracking-wide uppercase">
                   Company Size
                 </label>
-                <div className="relative rounded-lg shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+                <div className="relative rounded-lg shadow-xs">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Users className="w-4 h-4" />
                   </div>
                   <select
                     name="companySize"
                     value={formData.companySize}
                     onChange={handleChange}
-                    className="w-full rounded-lg bg-zinc-900/90 border border-zinc-800 px-3.5 py-2.5 pl-10 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3.5 py-2.5 pl-10 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
                   >
                     <option value="1-50 employees">1-50 employees</option>
                     <option value="51-200 employees">51-200 employees</option>
@@ -172,18 +172,18 @@ export default function RegisterPage() {
             <Button
               type="submit"
               size="md"
-              className="w-full mt-4"
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
               isLoading={isLoading}
             >
               Complete Registration <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-zinc-800/80 text-center text-xs text-zinc-400">
+          <div className="mt-6 pt-5 border-t border-slate-200/80 text-center text-xs text-slate-500">
             Already registered?{" "}
             <Link
               href="/login"
-              className="text-orange-400 font-medium hover:underline"
+              className="text-blue-600 font-medium hover:underline"
             >
               Sign in to workspace
             </Link>

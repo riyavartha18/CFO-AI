@@ -12,8 +12,6 @@ import {
 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { DashboardCard } from "@/components/DashboardCard";
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
 
 import { useCompany } from "@/lib/CompanyContext";
 
@@ -39,155 +37,90 @@ export default function SettingsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              System Settings & Engine Configuration
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              System Settings &amp; Engine Configuration
             </h1>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Manage company profile, rule engine sensitivity thresholds, and backend endpoints.
             </p>
           </div>
 
-          <Button size="sm" onClick={handleSave}>
-            <Save className="w-3.5 h-3.5 mr-1" /> Save Preferences
-          </Button>
+          <button
+            onClick={handleSave}
+            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>Save Preferences</span>
+          </button>
         </div>
 
         {saved && (
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Preferences saved successfully.</span>
+          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-semibold">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Preferences saved successfully. Active target set to {companyId}.</span>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Company Profile Settings */}
+          {/* Active Company Target */}
           <DashboardCard
-            title="Company Information"
-            subtitle="Default parameters for financial record association"
+            title="Active Target Company Entity"
+            subtitle="Global context for all analytical models, rules, and forecasts"
           >
-            <form onSubmit={handleSave} className="space-y-4">
-              <Input
-                label="Company Name"
-                defaultValue="Nexus Dynamics Corp."
-                placeholder="Enterprise Legal Name"
-              />
-
-              <Input
-                label="Primary Company ID"
-                value={currentId}
-                onChange={(e) => setCurrentId(e.target.value.toUpperCase())}
-                placeholder="Dynamic ID (e.g. C001, C002, ABC123)"
-                helperText="Matches the company_id column in financial_records"
-              />
-
-              <Input
-                label="Reporting Currency"
-                defaultValue="INR (₹ in Crores)"
-                disabled
-                helperText="Default standard currency unit"
-              />
-
-              <div className="pt-2">
-                <Button type="submit" size="sm" variant="secondary">
-                  Update Profile
-                </Button>
+            <form onSubmit={handleSave} className="space-y-4 pt-2">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">
+                  Target Company Identifier (ID)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={currentId}
+                    onChange={(e) => setCurrentId(e.target.value.toUpperCase())}
+                    placeholder="e.g. C001, C002, ABC123"
+                    className="flex-1 bg-slate-50 text-slate-900 text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                  >
+                    Apply Target
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">
+                  Changing the company ID updates the live Supabase query context across all analytical pages.
+                </p>
               </div>
             </form>
           </DashboardCard>
 
-          {/* Engine Parameters & Sensitivity */}
+          {/* Engine Parameters */}
           <DashboardCard
-            title="Rule Engine Thresholds"
-            subtitle="Deterministic forward and backward chaining limits"
+            title="Backend Model Parameters"
+            subtitle="Machine Learning model contamination and sensitivity bounds"
           >
-            <div className="space-y-4 text-xs">
-              <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
-                <div className="flex justify-between font-semibold text-zinc-200">
-                  <span>Liquidity Risk Threshold</span>
-                  <span className="font-mono text-orange-400">Current Ratio &lt; 1.0</span>
-                </div>
-                <p className="text-zinc-400 text-[11px]">
-                  Triggers High Liquidity Risk when current assets fall below current liabilities.
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
-                <div className="flex justify-between font-semibold text-zinc-200">
-                  <span>Debt-to-Equity Covenants</span>
-                  <span className="font-mono text-orange-400">D/E &gt; 3.0</span>
-                </div>
-                <p className="text-zinc-400 text-[11px]">
-                  Triggers High Debt Risk when leverage exceeds 3.0x total equity.
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
-                <div className="flex justify-between font-semibold text-zinc-200">
-                  <span>Interest Coverage Safety</span>
-                  <span className="font-mono text-orange-400">IC &lt; 1.5x</span>
-                </div>
-                <p className="text-zinc-400 text-[11px]">
-                  Flags solvency pressure when operating income barely covers interest expense.
-                </p>
-              </div>
-            </div>
-          </DashboardCard>
-
-          {/* Backend Connection Indicator */}
-          <DashboardCard
-            title="Backend API Configuration"
-            subtitle="Target REST API for financial engine calls"
-          >
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1 uppercase tracking-wider">
-                  Target Endpoint (NEXT_PUBLIC_API_URL)
-                </label>
-                <div className="p-2.5 rounded-lg bg-zinc-950 font-mono text-xs text-orange-400 border border-zinc-800">
-                  {process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 space-y-1">
-                <span className="font-semibold text-zinc-300 block">Architecture Guarantee:</span>
-                <p>
-                  Frontend remains fully decoupled from direct Supabase database credentials or ML model execution. All analysis requests flow through the Django REST API layer.
-                </p>
-              </div>
-            </div>
-          </DashboardCard>
-
-          {/* Notification Preferences */}
-          <DashboardCard
-            title="Notification Alerts"
-            subtitle="Automated alerts for financial risk detection"
-          >
-            <div className="space-y-3 text-xs">
-              <label className="flex items-center justify-between p-3 rounded-lg bg-zinc-900/40 border border-zinc-800 cursor-pointer">
+            <div className="space-y-4 pt-1 text-xs">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-200/90">
                 <div>
-                  <span className="font-medium text-zinc-200 block">Critical Risk Alerts</span>
-                  <span className="text-[11px] text-zinc-400">Notify immediately when High Risk or D/E &gt; 3.0 is detected</span>
+                  <span className="font-bold text-slate-900 block">Anomaly Isolation Forest Outlier Contamination</span>
+                  <span className="text-slate-500 text-[11px]">Expected proportion of outliers in baseline data</span>
                 </div>
-                <input
-                  type="checkbox"
-                  defaultChecked
-                  className="rounded bg-zinc-800 border-zinc-700 text-orange-500 focus:ring-orange-500/20"
-                />
-              </label>
+                <span className="font-mono font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg">
+                  10.0%
+                </span>
+              </div>
 
-              <label className="flex items-center justify-between p-3 rounded-lg bg-zinc-900/40 border border-zinc-800 cursor-pointer">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-200/90">
                 <div>
-                  <span className="font-medium text-zinc-200 block">Quarterly Statement Upload Alerts</span>
-                  <span className="text-[11px] text-zinc-400">Receive validation summary when new quarterly CSV is ingested</span>
+                  <span className="font-bold text-slate-900 block">Rule Engine Rule Base</span>
+                  <span className="text-slate-500 text-[11px]">Production financial rules for backward reasoning</span>
                 </div>
-                <input
-                  type="checkbox"
-                  defaultChecked
-                  className="rounded bg-zinc-800 border-zinc-700 text-orange-500 focus:ring-orange-500/20"
-                />
-              </label>
+                <span className="font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                  10 Active Rules
+                </span>
+              </div>
             </div>
           </DashboardCard>
         </div>
