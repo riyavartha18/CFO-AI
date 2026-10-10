@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LineChart,
   ShieldAlert,
+  AlertTriangle,
   TrendingUp,
   Sliders,
   GitCompare,
@@ -37,6 +38,12 @@ export const navigationItems = [
     name: "Risk Analysis",
     href: "/risk-analysis",
     icon: ShieldAlert,
+  },
+  {
+    name: "Anomaly Detection",
+    href: "/anomaly-detection",
+    icon: AlertTriangle,
+    badge: "ML",
   },
   {
     name: "Forecast",

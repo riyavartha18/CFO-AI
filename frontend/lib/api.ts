@@ -258,3 +258,202 @@ export async function getCompanyComparison(companyIds: string[]) {
 export async function askSmartCFO(query: string, companyId: string = "C001") {
   return { query, companyId, answer: "AI assistant response placeholder" };
 }
+
+// ============================================================
+// ANOMALY DETECTION INTERFACES & API METHODS
+// ============================================================
+
+export interface AnomalyCompanyInfo {
+  company_id: string;
+  company_name: string;
+  industry: string;
+  company_size: string;
+}
+
+export interface AnomalySummary {
+  total_records: number;
+  flagged_anomalies: number;
+  normal_records: number;
+  anomaly_percentage: number;
+  last_scan_time: string;
+}
+
+export interface AnomalyContributorItem {
+  feature_key: string;
+  feature_label: string;
+  unit: string;
+  category: string;
+  actual_value: number;
+  previous_value: number | null;
+  historical_median: number;
+  absolute_diff: number;
+  percent_diff: number;
+  deviation_severity: number;
+  is_unusual: boolean;
+}
+
+export interface AnomalyRecordItem {
+  record_id: number;
+  company_id: string;
+  quarter: string;
+  is_anomaly: boolean;
+  anomaly_status: "ANOMALY PRESENT" | "No Anomaly Detected";
+  decision_score: number;
+  is_reviewed: boolean;
+  explanation: string;
+  top_contributors: AnomalyContributorItem[];
+  unusual_parameters?: AnomalyContributorItem[];
+  metrics: Record<string, number>;
+  all_deviations: AnomalyContributorItem[];
+}
+
+export interface AnomalyChartSeriesPoint {
+  quarter: string;
+  value: number;
+  is_anomaly: boolean;
+  is_parameter_unusual?: boolean;
+  record_id: number;
+  decision_score: number;
+}
+
+export interface AnomalyChartItem {
+  key: string;
+  title: string;
+  unit: string;
+  category: string;
+  has_parameter_anomalies?: boolean;
+  metric_status?: "normal" | "unusual" | "review";
+  series: AnomalyChartSeriesPoint[];
+}
+
+export interface ParameterSummary {
+  total_evaluated_parameters: number;
+  normal_count: number;
+  normal_percentage: number;
+  unusual_count: number;
+  unusual_percentage: number;
+}
+
+export interface MetricsSummary {
+  total_metrics: number;
+  normal_metrics_count: number;
+  normal_metrics_percentage: number;
+  unusual_metrics_count: number;
+  unusual_metrics_percentage: number;
+  review_metrics_count: number;
+  review_metrics_percentage: number;
+  metric_classifications?: Record<string, string>;
+}
+
+export interface AnomalyOverviewResponse {
+  company_info: AnomalyCompanyInfo;
+  summary: AnomalySummary;
+  parameter_summary: ParameterSummary;
+  metrics_summary: MetricsSummary;
+  records: AnomalyRecordItem[];
+  charts_data: Record<string, AnomalyChartItem>;
+  insufficient_data?: boolean;
+  message?: string;
+}
+
+export interface ParameterAnomalyDetailItem extends AnomalyContributorItem {
+  status: string;
+  parameter_explanation: string;
+}
+
+export interface ParameterAnomalyDetailResponse {
+  company_info: AnomalyCompanyInfo;
+  quarter: string;
+  record_id: number;
+  is_quarter_anomaly: boolean;
+  decision_score: number;
+  is_reviewed: boolean;
+  parameter: ParameterAnomalyDetailItem;
+  historical_trend: AnomalyChartItem;
+  summary: AnomalySummary;
+}
+
+/**
+ * Fetch anomaly overview data for a given company ID
+ * GET /api/anomaly-detection/overview/?company_id=C001
+ */
+export async function getAnomalyOverview(companyId: string): Promise<AnomalyOverviewResponse> {
+  const cleanId = companyId.trim().toUpperCase();
+  const res = await fetch(`${API_BASE_URL}/anomaly-detection/overview/?company_id=${cleanId}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to load anomaly detection data for "${cleanId}" (${res.status}).`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Trigger Isolation Forest re-scan for a given company ID
+ * POST /api/anomaly-detection/scan/
+ */
+export async function scanAnomalies(companyId: string): Promise<AnomalyOverviewResponse> {
+  const cleanId = companyId.trim().toUpperCase();
+  const res = await fetch(`${API_BASE_URL}/anomaly-detection/scan/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ company_id: cleanId }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Anomaly detection scan failed for "${cleanId}" (${res.status}).`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Fetch parameter-focused anomaly details for a specific record ID & feature key
+ * GET /api/anomaly-detection/detail/<record_id>/?feature_key=operating_expenses
+ */
+export async function getAnomalyDetail(
+  recordId: number | string,
+  featureKey?: string
+): Promise<ParameterAnomalyDetailResponse> {
+  const query = featureKey ? `?feature_key=${encodeURIComponent(featureKey)}` : "";
+  const res = await fetch(`${API_BASE_URL}/anomaly-detection/detail/${recordId}/${query}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      throw new Error(`Anomaly record ID #${recordId} not found.`);
+    }
+    throw new Error(`Failed to fetch parameter anomaly details (${res.status}).`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Toggle reviewed state of an anomaly record
+ * POST /api/anomaly-detection/review/<record_id>/
+ */
+export async function markAnomalyReviewed(
+  recordId: number | string,
+  reviewed: boolean
+): Promise<{ success: boolean; record_id: number; reviewed: boolean }> {
+  const res = await fetch(`${API_BASE_URL}/anomaly-detection/review/${recordId}/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reviewed }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to update review status for record #${recordId}.`);
+  }
+
+  return res.json();
+}
+

@@ -7,6 +7,11 @@ from rest_framework import status
 # Import the existing analysis engine without duplicating any logic
 from test_prediction import analyze_company
 from .forecasting import generate_company_revenue_forecast
+from anomaly import (
+    analyze_anomalies_for_company,
+    get_single_record_anomaly_details,
+    toggle_record_review
+)
 
 
 def get_company_record_from_supabase(company_id: str):
@@ -83,7 +88,6 @@ def companies_list_view(request):
     """
     companies = get_all_companies_from_supabase()
     return Response({"companies": companies})
-
 
 
 @api_view(["GET"])
@@ -170,4 +174,85 @@ def company_forecast_view(request, company_id):
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+# ============================================================
+# ANOMALY DETECTION API ENDPOINTS
+# ============================================================
+
+@api_view(["GET"])
+def anomaly_overview_view(request):
+    """
+    GET /api/anomaly-detection/overview/?company_id=C001
+    GET /api/anomaly-detection/records/?company_id=C001
+    Returns Isolation Forest anomaly analysis, charts data, and summary metrics.
+    """
+    company_id = request.query_params.get("company_id", "C001").strip().upper()
+    try:
+        data = analyze_anomalies_for_company(company_id)
+        return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"error": "Failed to analyze financial anomalies", "detail": str(e), "company_id": company_id},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(["POST"])
+def anomaly_scan_view(request):
+    """
+    POST /api/anomaly-detection/scan/
+    Payload: {"company_id": "C001"}
+    Triggers Isolation Forest re-scan and updates scan timestamp.
+    """
+    company_id = request.data.get("company_id", "C001").strip().upper()
+    try:
+        data = analyze_anomalies_for_company(company_id, re_scan=True)
+        return Response(data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"error": "Failed to run anomaly detection scan", "detail": str(e), "company_id": company_id},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(["GET"])
+def anomaly_detail_view(request, record_id):
+    """
+    GET /api/anomaly-detection/detail/<record_id>/?feature_key=operating_expenses
+    Returns parameter-focused explanation, historical values, and trend line for a specific record & parameter.
+    """
+    feature_key = request.query_params.get("feature_key")
+    try:
+        details = get_single_record_anomaly_details(record_id, feature_key=feature_key)
+        if not details:
+            return Response(
+                {"error": f"Record with ID {record_id} not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        return Response(details, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"error": "Failed to fetch parameter anomaly details", "detail": str(e), "record_id": record_id},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(["POST"])
+def anomaly_review_view(request, record_id):
+    """
+    POST /api/anomaly-detection/review/<record_id>/
+    Payload: {"reviewed": true/false}
+    Toggles review state of an anomaly record.
+    """
+    reviewed = request.data.get("reviewed", True)
+    try:
+        toggle_record_review(record_id, reviewed)
+        return Response({"success": True, "record_id": record_id, "reviewed": reviewed})
+    except Exception as e:
+        return Response(
+            {"error": "Failed to update review status", "detail": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 
