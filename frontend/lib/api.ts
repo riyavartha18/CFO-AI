@@ -161,8 +161,79 @@ export async function getCompanyAnalysis(companyId: string): Promise<CompanyAnal
   return res.json();
 }
 
+export interface ForecastQuarterItem {
+  quarter: string;
+  revenue: number;
+  baseline_quarter: string;
+  baseline_revenue: number;
+  horizon?: number;
+}
+
+export interface HistoricalQuarterItem {
+  quarter: string;
+  revenue: number;
+}
+
+export interface CompanyForecastResponse {
+  status: string;
+  company_id: string;
+  company_name: string;
+  forecast_method: string;
+  latest_historical_quarter: string;
+  latest_revenue: number;
+  latest_yoy_growth_percent: number;
+  capped_growth_percent: number;
+  trend: "Increasing" | "Declining" | "Stable";
+  forecast_change_percent: number;
+  forecast: ForecastQuarterItem[];
+  historical: HistoricalQuarterItem[];
+  explanation: string;
+  assumptions: string;
+  data_quality?: {
+    historical_quarters_count: number;
+    earliest_quarter: string;
+    latest_quarter: string;
+    has_continuous_history: boolean;
+    growth_capped: boolean;
+  };
+}
+
+/**
+ * 4. Company revenue forecasting
+ * GET /api/forecast/<company_id>/
+ */
+export async function getCompanyForecast(companyId: string): Promise<CompanyForecastResponse> {
+  const trimmedId = companyId.trim();
+  const res = await fetch(`${API_BASE_URL}/forecast/${trimmedId}/`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      throw new Error(`Company not found: No financial records available for "${trimmedId}".`);
+    }
+    let errorDetail = `Forecast request failed with status ${res.status}`;
+    try {
+      const errJson = await res.json();
+      if (errJson.detail) {
+        errorDetail = errJson.detail;
+      } else if (errJson.error) {
+        errorDetail = errJson.error;
+      }
+    } catch {
+      // ignore JSON parse error
+    }
+    throw new Error(errorDetail);
+  }
+
+  return res.json();
+}
+
 // ------------------------------------------------------------
 // Stubs for future UI integrations (kept decoupled)
+
 // ------------------------------------------------------------
 export async function loginUser(credentials: { email: string; password?: string }) {
   return { success: true, email: credentials.email };

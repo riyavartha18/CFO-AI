@@ -6,6 +6,7 @@ from rest_framework import status
 
 # Import the existing analysis engine without duplicating any logic
 from test_prediction import analyze_company
+from .forecasting import generate_company_revenue_forecast
 
 
 def get_company_record_from_supabase(company_id: str):
@@ -124,3 +125,49 @@ def company_details_view(request, company_id):
             status=status.HTTP_404_NOT_FOUND
         )
     return Response(details)
+
+
+@api_view(["GET"])
+def company_forecast_view(request, company_id):
+    """
+    4. Company revenue forecasting endpoint.
+    GET /api/forecast/<company_id>/
+    GET /api/company/<company_id>/forecast/
+    Generates 4-quarter revenue forecast using deterministic Seasonal + Trend Baseline method.
+    """
+    try:
+        forecast_result = generate_company_revenue_forecast(company_id)
+        return Response(forecast_result, status=status.HTTP_200_OK)
+    except LookupError as e:
+        return Response(
+            {
+                "status": "error",
+                "error": "Company not found",
+                "detail": str(e),
+                "company_id": company_id
+            },
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except ValueError as e:
+        error_info = e.args[0] if isinstance(e.args[0], dict) else {"message": str(e), "error_type": "VALIDATION_ERROR"}
+        return Response(
+            {
+                "status": "error",
+                "error": "Insufficient or invalid financial data for forecasting",
+                "detail": error_info.get("message", str(e)),
+                "error_type": error_info.get("error_type", "VALIDATION_ERROR"),
+                "company_id": company_id
+            },
+            status=status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+    except Exception as e:
+        return Response(
+            {
+                "status": "error",
+                "error": "Internal forecasting error",
+                "detail": str(e),
+                "company_id": company_id
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
