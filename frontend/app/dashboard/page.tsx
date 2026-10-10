@@ -321,26 +321,36 @@ export default function DashboardPage() {
         >
           {data.rule_based_risks.length > 0 ? (
             <div className="space-y-3">
-              {data.rule_based_risks.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-start gap-3"
-                >
-                  <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">
-                      {item.risk} ({item.rule})
-                    </h4>
-                    <div className="space-y-0.5 mt-1">
-                      {item.explanation.map((exp, expIdx) => (
-                        <p key={expIdx} className="text-xs text-slate-600">
-                          {exp}
-                        </p>
-                      ))}
+              {data.rule_based_risks.map((item, idx) => {
+                const riskSlug = item.slug || item.risk.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+                return (
+                  <Link
+                    key={idx}
+                    href={`/risk-analysis/details?risk=${riskSlug}`}
+                    className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 hover:border-blue-400 hover:bg-slate-100/80 transition-all flex items-start justify-between gap-3 group block"
+                  >
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                          {item.risk} ({item.rule})
+                        </h4>
+                        <div className="space-y-0.5 mt-1">
+                          {item.explanation.map((exp, expIdx) => (
+                            <p key={expIdx} className="text-xs text-slate-600">
+                              {exp}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                    <div className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      <span>View Details</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center gap-3 text-xs text-emerald-800">

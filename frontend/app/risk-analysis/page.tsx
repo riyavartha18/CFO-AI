@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   ShieldAlert,
   AlertTriangle,
@@ -10,6 +11,7 @@ import {
   TrendingDown,
   Info,
   Building2,
+  ChevronRight,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -296,47 +298,59 @@ export default function RiskAnalysisPage() {
         >
           {data.rule_based_risks.length > 0 ? (
             <div className="space-y-4">
-              {data.rule_based_risks.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-200 text-slate-800">
-                        Rule Trigger
+              {data.rule_based_risks.map((item, idx) => {
+                const riskSlug = item.slug || item.risk.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+                return (
+                  <div
+                    key={idx}
+                    className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 hover:border-blue-400 hover:shadow-md transition-all space-y-3 group"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-200 text-slate-800">
+                          Rule Trigger
+                        </span>
+                        <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                          {item.risk}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <RiskBadge level={item.severity || (item.risk.includes("High") ? "High Risk" : "Medium Risk")} size="sm" />
+                        <Link
+                          href={`/risk-analysis/details?risk=${riskSlug}`}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-xs group-hover:bg-blue-50 group-hover:border-blue-200 transition-all"
+                        >
+                          <span>View Details &amp; Recommendations</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Rule Name */}
+                    <div className="p-3 rounded-xl bg-white border border-slate-200/80 text-xs">
+                      <span className="font-bold text-slate-500 block text-[10px] uppercase tracking-wider mb-1">
+                        Rule Evaluated:
                       </span>
-                      <h3 className="text-sm font-bold text-slate-900">
-                        {item.risk}
-                      </h3>
+                      <p className="text-slate-800 font-medium">{item.rule}</p>
                     </div>
-                    <RiskBadge level={item.risk.includes("High") ? "High Risk" : "Medium Risk"} size="sm" />
-                  </div>
 
-                  {/* Rule Name */}
-                  <div className="p-3 rounded-xl bg-white border border-slate-200/80 text-xs">
-                    <span className="font-bold text-slate-500 block text-[10px] uppercase tracking-wider mb-1">
-                      Rule Evaluated:
-                    </span>
-                    <p className="text-slate-800 font-medium">{item.rule}</p>
-                  </div>
-
-                  {/* Backward Explanation */}
-                  <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 text-xs">
-                    <div className="flex items-center gap-1.5 text-blue-700 font-bold text-[10px] uppercase tracking-wider mb-1">
-                      <HelpCircle className="w-3.5 h-3.5" />
-                      Backward Chaining Root-Cause Explanation:
-                    </div>
-                    <div className="space-y-1">
-                      {item.explanation.map((exp, expIdx) => (
-                        <p key={expIdx} className="text-slate-800 font-medium">
-                          → {exp}
-                        </p>
-                      ))}
+                    {/* Backward Explanation */}
+                    <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 text-xs">
+                      <div className="flex items-center gap-1.5 text-blue-700 font-bold text-[10px] uppercase tracking-wider mb-1">
+                        <HelpCircle className="w-3.5 h-3.5" />
+                        Backward Chaining Root-Cause Explanation:
+                      </div>
+                      <div className="space-y-1">
+                        {item.explanation.map((exp, expIdx) => (
+                          <p key={expIdx} className="text-slate-800 font-medium">
+                            → {exp}
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="p-8 text-center rounded-2xl bg-emerald-50/50 border border-emerald-200">

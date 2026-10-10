@@ -26,9 +26,9 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 try:
-    from rules.cfo_rules import forward_chaining, backward_chaining
+    from rules.cfo_rules import forward_chaining, backward_chaining, get_risk_details_and_recommendations
 except ImportError:
-    from backend.rules.cfo_rules import forward_chaining, backward_chaining
+    from backend.rules.cfo_rules import forward_chaining, backward_chaining, get_risk_details_and_recommendations
 
 
 # ============================================================
@@ -358,230 +358,151 @@ def analyze_company(company_id):
     # 1. Profit Margin
     # --------------------------------------------------------
 
-    df["profit_margin"] = (
-
-        df["net_profit"]
-
-        / df["revenue"]
-
-        * 100
+    # --------------------------------------------------------
+    # 1. Profit Margin (%)
+    # --------------------------------------------------------
+    df["profit_margin"] = np.where(
+        df["revenue"] != 0,
+        (df["net_profit"] / df["revenue"]) * 100.0,
+        0.0
     )
 
-
     # --------------------------------------------------------
-    # 2. ROA
+    # 2. ROA (%)
     # --------------------------------------------------------
-
-    df["roa"] = (
-
-        df["net_profit"]
-
-        / df["total_assets"]
-
-        * 100
+    df["roa"] = np.where(
+        df["total_assets"] != 0,
+        (df["net_profit"] / df["total_assets"]) * 100.0,
+        0.0
     )
 
-
     # --------------------------------------------------------
-    # 3. ROE
+    # 3. ROE (%)
     # --------------------------------------------------------
-
-    df["roe"] = (
-
-        df["net_profit"]
-
-        / df["equity"]
-
-        * 100
+    df["roe"] = np.where(
+        df["equity"] > 0,
+        (df["net_profit"] / df["equity"]) * 100.0,
+        np.where(df["net_profit"] < 0, -100.0, 0.0)
     )
-
 
     # --------------------------------------------------------
     # 4. Current Ratio
     # --------------------------------------------------------
-
-    df["current_ratio"] = (
-
-        df["current_assets"]
-
-        / df["current_liabilities"]
+    df["current_ratio"] = np.where(
+        df["current_liabilities"] > 0,
+        df["current_assets"] / df["current_liabilities"],
+        np.where(df["current_assets"] > 0, 10.0, 1.0)
     )
-
 
     # --------------------------------------------------------
     # 5. Quick Ratio
     # --------------------------------------------------------
-
-    df["quick_ratio"] = (
-
-        (
-            df["cash"]
-
-            + df["accounts_receivable"]
-        )
-
-        / df["current_liabilities"]
+    df["quick_ratio"] = np.where(
+        df["current_liabilities"] > 0,
+        (df["cash"] + df["accounts_receivable"]) / df["current_liabilities"],
+        np.where((df["cash"] + df["accounts_receivable"]) > 0, 10.0, 1.0)
     )
-
 
     # --------------------------------------------------------
     # 6. Debt to Equity
     # --------------------------------------------------------
-
-    df["debt_to_equity"] = (
-
-        df["total_debt"]
-
-        / df["equity"]
+    df["debt_to_equity"] = np.where(
+        df["equity"] > 0,
+        df["total_debt"] / df["equity"],
+        np.where(df["total_debt"] > 0, 10.0, 0.0)
     )
 
-
     # --------------------------------------------------------
-    # 7. Debt to Assets
+    # 7. Debt to Assets (%)
     # --------------------------------------------------------
-
-    df["debt_to_assets"] = (
-
-        df["total_debt"]
-
-        / df["total_assets"]
-
-        * 100
+    df["debt_to_assets"] = np.where(
+        df["total_assets"] > 0,
+        (df["total_debt"] / df["total_assets"]) * 100.0,
+        0.0
     )
-
 
     # --------------------------------------------------------
     # 8. Interest Coverage
     # --------------------------------------------------------
-
-    df["interest_coverage"] = (
-
-        df["ebit"]
-
-        / df["interest_expense"]
+    df["interest_coverage"] = np.where(
+        df["interest_expense"] > 0,
+        df["ebit"] / df["interest_expense"],
+        np.where(df["ebit"] >= 0, 100.0, 0.0)
     )
-
 
     # --------------------------------------------------------
     # 9. Cash to Debt
     # --------------------------------------------------------
-
-    df["cash_to_debt"] = (
-
-        df["cash"]
-
-        / df["total_debt"]
+    df["cash_to_debt"] = np.where(
+        df["total_debt"] > 0,
+        df["cash"] / df["total_debt"],
+        np.where(df["cash"] > 0, 10.0, 0.0)
     )
-
 
     # --------------------------------------------------------
     # 10. Operating Cash Flow Ratio
     # --------------------------------------------------------
-
-    df["operating_cash_flow_ratio"] = (
-
-        df["operating_cash_flow"]
-
-        / df["current_liabilities"]
+    df["operating_cash_flow_ratio"] = np.where(
+        df["current_liabilities"] > 0,
+        df["operating_cash_flow"] / df["current_liabilities"],
+        np.where(df["operating_cash_flow"] > 0, 10.0, 0.0)
     )
-
 
     # --------------------------------------------------------
     # 11. Asset Turnover
     # --------------------------------------------------------
-
-    df["asset_turnover"] = (
-
-        df["revenue"]
-
-        / df["total_assets"]
+    df["asset_turnover"] = np.where(
+        df["total_assets"] > 0,
+        df["revenue"] / df["total_assets"],
+        0.0
     )
-
 
     # --------------------------------------------------------
     # 12. Inventory Turnover
     # --------------------------------------------------------
-
-    df["inventory_turnover"] = (
-
-        df["cogs"]
-
-        / df["inventory"]
+    df["inventory_turnover"] = np.where(
+        df["inventory"] > 0,
+        df["cogs"] / df["inventory"],
+        0.0
     )
 
-
     # --------------------------------------------------------
-    # 13. Revenue Growth
+    # 13. Revenue Growth (QoQ %)
     # --------------------------------------------------------
-
-    df["revenue_growth"] = (
-
-        df.groupby("company_id")["revenue"]
-
-        .pct_change()
-
-        * 100
+    rev = df["revenue"]
+    prev_rev = rev.shift(1)
+    df["revenue_growth"] = np.where(
+        (prev_rev.notna()) & (prev_rev > 0),
+        ((rev - prev_rev) / prev_rev) * 100.0,
+        0.0
     )
 
-
     # --------------------------------------------------------
-    # 14. Profit Growth
+    # 14. Profit Growth (QoQ %)
     # --------------------------------------------------------
-
-    df["profit_growth"] = (
-
-        df.groupby("company_id")["net_profit"]
-
-        .pct_change()
-
-        * 100
+    pat = df["net_profit"]
+    prev_pat = pat.shift(1)
+    df["profit_growth"] = np.where(
+        (prev_pat.notna()) & (prev_pat != 0),
+        ((pat - prev_pat) / np.abs(prev_pat)) * 100.0,
+        0.0
     )
 
-
     # --------------------------------------------------------
-    # 15. Cash Flow Growth
+    # 15. Cash Flow Growth (QoQ %)
     # --------------------------------------------------------
-
-    df["cash_flow_growth"] = (
-
-        df.groupby("company_id")["operating_cash_flow"]
-
-        .pct_change()
-
-        * 100
+    ocf = df["operating_cash_flow"]
+    prev_ocf = ocf.shift(1)
+    df["cash_flow_growth"] = np.where(
+        (prev_ocf.notna()) & (prev_ocf != 0),
+        ((ocf - prev_ocf) / np.abs(prev_ocf)) * 100.0,
+        0.0
     )
-
 
     # ========================================================
-    # 9. HANDLE INFINITY AND MISSING VALUES
+    # 9. SANITIZE INFINITY AND MISSING VALUES
     # ========================================================
-
-    df.replace(
-
-        [np.inf, -np.inf],
-
-        np.nan,
-
-        inplace=True
-    )
-
-
-    growth_columns = [
-
-        "revenue_growth",
-
-        "profit_growth",
-
-        "cash_flow_growth"
-    ]
-
-
-    df[growth_columns] = (
-
-        df[growth_columns]
-
-        .fillna(0)
-    )
+    df[feature_columns] = df[feature_columns].fillna(0.0).replace([np.inf, -np.inf], 0.0)
 
 
     # ========================================================
@@ -1050,35 +971,58 @@ def analyze_company(company_id):
         )
 
 
-        latest_rule_risks.append({
+        details = get_risk_details_and_recommendations(latest.to_dict(), target)
 
+        risk_entry = {
             "risk": target,
-
             "rule": risk["rule"],
+            "explanation": explanation,
+            "slug": details["slug"],
+            "severity": details["severity"],
+            "category": details["category"],
+            "metric_name": details["metric_name"],
+            "actual_value": details["actual_value"],
+            "threshold_display": details["threshold_display"],
+            "potential_impact": details["potential_impact"],
+            "recommendations": details["recommendations"],
+            "action_plan": details["action_plan"],
+            "monitoring_metrics": details["monitoring_metrics"]
+        }
 
-            "explanation": explanation
+        latest_rule_risks.append(risk_entry)
 
-        })
 
+    def _safe_float(val, default=0.0):
+        if val is None or pd.isna(val) or np.isnan(val) or np.isinf(val):
+            return default
+        return round(float(val), 2)
 
     # Multi-quarter historical trends calculated from database records
     quarterly_trends = []
     for _, row in df.iterrows():
         quarterly_trends.append({
             "quarter": str(row["quarter"]),
-            "revenue": round(float(row["revenue"]), 2) if pd.notnull(row["revenue"]) else 0.0,
-            "net_profit": round(float(row["net_profit"]), 2) if pd.notnull(row["net_profit"]) else 0.0,
-            "cash": round(float(row["cash"]), 2) if pd.notnull(row["cash"]) else 0.0,
-            "total_debt": round(float(row["total_debt"]), 2) if pd.notnull(row["total_debt"]) else 0.0,
-            "operating_cash_flow": round(float(row["operating_cash_flow"]), 2) if pd.notnull(row["operating_cash_flow"]) else 0.0,
+            "revenue": _safe_float(row["revenue"]),
+            "net_profit": _safe_float(row["net_profit"]),
+            "cash": _safe_float(row["cash"]),
+            "total_debt": _safe_float(row["total_debt"]),
+            "operating_cash_flow": _safe_float(row["operating_cash_flow"]),
             "predicted_risk": str(row.get("predicted_risk", "Low Risk")),
         })
 
-    # 15 engineered financial ratios for latest quarter
+    # 15 engineered financial ratios for latest quarter (Reporting API)
     financial_ratios = {}
+    is_first_quarter = len(df) <= 1 or latest["quarter"] == df.iloc[0]["quarter"]
+    is_negative_equity = latest.get("equity", 1.0) <= 0 and latest.get("total_debt", 0) > 0
+
     for feature in trained_features:
         val = latest[feature]
-        financial_ratios[feature] = round(float(val), 2) if pd.notnull(val) else 0.0
+        if feature == "debt_to_equity" and is_negative_equity:
+            financial_ratios[feature] = None  # Explicit N/A for reporting negative equity
+        elif feature in ["revenue_growth", "profit_growth", "cash_flow_growth"] and is_first_quarter:
+            financial_ratios[feature] = None  # Explicit N/A for first quarter growth
+        else:
+            financial_ratios[feature] = _safe_float(val)
 
     result = {
 
@@ -1097,30 +1041,30 @@ def analyze_company(company_id):
             latest_rule_risks,
 
         "financial_metrics": {
-            "revenue": round(float(latest["revenue"]), 2),
-            "cogs": round(float(latest["cogs"]), 2),
-            "operating_expenses": round(float(latest["operating_expenses"]), 2),
-            "ebitda": round(float(latest["ebitda"]), 2),
-            "ebit": round(float(latest["ebit"]), 2),
-            "interest_expense": round(float(latest["interest_expense"]), 2),
-            "tax_expense": round(float(latest["tax_expense"]), 2),
-            "net_profit": round(float(latest["net_profit"]), 2),
-            "cash": round(float(latest["cash"]), 2),
-            "accounts_receivable": round(float(latest["accounts_receivable"]), 2),
-            "inventory": round(float(latest["inventory"]), 2),
-            "fixed_assets": round(float(latest["fixed_assets"]), 2),
-            "current_assets": round(float(latest["current_assets"]), 2),
-            "total_assets": round(float(latest["total_assets"]), 2),
-            "accounts_payable": round(float(latest["accounts_payable"]), 2),
-            "short_term_debt": round(float(latest["short_term_debt"]), 2),
-            "long_term_debt": round(float(latest["long_term_debt"]), 2),
-            "current_liabilities": round(float(latest["current_liabilities"]), 2),
-            "total_debt": round(float(latest["total_debt"]), 2),
-            "total_liabilities": round(float(latest["total_liabilities"]), 2),
-            "equity": round(float(latest["equity"]), 2),
-            "operating_cash_flow": round(float(latest["operating_cash_flow"]), 2),
-            "investing_cash_flow": round(float(latest["investing_cash_flow"]), 2),
-            "financing_cash_flow": round(float(latest["financing_cash_flow"]), 2),
+            "revenue": _safe_float(latest["revenue"]),
+            "cogs": _safe_float(latest["cogs"]),
+            "operating_expenses": _safe_float(latest["operating_expenses"]),
+            "ebitda": _safe_float(latest["ebitda"]),
+            "ebit": _safe_float(latest["ebit"]),
+            "interest_expense": _safe_float(latest["interest_expense"]),
+            "tax_expense": _safe_float(latest["tax_expense"]),
+            "net_profit": _safe_float(latest["net_profit"]),
+            "cash": _safe_float(latest["cash"]),
+            "accounts_receivable": _safe_float(latest["accounts_receivable"]),
+            "inventory": _safe_float(latest["inventory"]),
+            "fixed_assets": _safe_float(latest["fixed_assets"]),
+            "current_assets": _safe_float(latest["current_assets"]),
+            "total_assets": _safe_float(latest["total_assets"]),
+            "accounts_payable": _safe_float(latest["accounts_payable"]),
+            "short_term_debt": _safe_float(latest["short_term_debt"]),
+            "long_term_debt": _safe_float(latest["long_term_debt"]),
+            "current_liabilities": _safe_float(latest["current_liabilities"]),
+            "total_debt": _safe_float(latest["total_debt"]),
+            "total_liabilities": _safe_float(latest["total_liabilities"]),
+            "equity": _safe_float(latest["equity"]),
+            "operating_cash_flow": _safe_float(latest["operating_cash_flow"]),
+            "investing_cash_flow": _safe_float(latest["investing_cash_flow"]),
+            "financing_cash_flow": _safe_float(latest["financing_cash_flow"]),
         },
 
         "financial_ratios": financial_ratios,
