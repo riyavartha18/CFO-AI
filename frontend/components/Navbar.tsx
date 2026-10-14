@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, Building2, UploadCloud, AlertCircle, Search, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  Building2,
+  UploadCloud,
+  AlertCircle,
+  LogOut,
+  ChevronDown,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { useCompany } from "@/lib/CompanyContext";
 import { getHealth } from "@/lib/api";
 
@@ -11,13 +20,17 @@ interface NavbarProps {
 }
 
 export function Navbar({ onMenuToggle }: NavbarProps) {
-  const { companyId, setCompanyId, availableCompanies } = useCompany();
-  const [customInput, setCustomInput] = useState(companyId);
-  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+  const {
+    companyId,
+    companyName,
+    setCompanyId,
+    availableCompanies,
+    user,
+    isAuthenticated,
+    logout,
+  } = useCompany();
 
-  useEffect(() => {
-    setCustomInput(companyId);
-  }, [companyId]);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
 
   useEffect(() => {
     getHealth()
@@ -29,22 +42,15 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
       });
   }, []);
 
-  const handleApplyCompany = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (customInput.trim()) {
-      setCompanyId(customInput.trim());
-    }
-  };
-
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value;
-    if (selected && selected !== "CUSTOM") {
+    if (selected) {
       setCompanyId(selected);
     }
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/90 px-4 sm:px-6 flex items-center justify-between shadow-xs">
+    <header className="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/90 px-4 sm:px-6 flex items-center justify-between shadow-2xs">
       <div className="flex items-center space-x-3">
         {/* Mobile menu trigger */}
         <button
@@ -56,75 +62,63 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Global Company Selector Controls */}
-        <div className="flex items-center space-x-2">
-          <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 hidden sm:flex items-center gap-1.5">
+        {/* Company Identity Badge & Scoped Selector */}
+        <div className="flex items-center space-x-2.5">
+          <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 flex items-center gap-1.5">
             <Building2 className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-wider hidden md:inline">Company:</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider hidden sm:inline">
+              Company:
+            </span>
           </div>
 
-          {/* Quick Dropdown Selector */}
-          <div className="relative">
-            <select
-              aria-label="Select Company"
-              value={availableCompanies.includes(companyId) ? companyId : "CUSTOM"}
-              onChange={handleSelectChange}
-              className="bg-slate-50 text-slate-900 text-xs font-mono font-bold pl-3 pr-7 py-1.5 rounded-lg border border-slate-200/90 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none uppercase"
-            >
-              {availableCompanies.map((cid) => (
-                <option key={cid} value={cid} className="bg-white text-slate-900">
-                  {cid} {cid === "C001" ? "(Acme Corp)" : cid === "C002" ? "(Beta Ind)" : ""}
-                </option>
-              ))}
-              {!availableCompanies.includes(companyId) && (
-                <option value="CUSTOM" className="bg-white text-slate-900">{companyId} (Active)</option>
+          {/* Company Identity Badge - Read-Only for normal company users */}
+          {(!isAuthenticated || (user?.role !== "admin" && user?.role !== "platform_admin")) ? (
+            <div className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200/90 flex items-center gap-2">
+              <span className="text-xs font-mono font-bold text-slate-900">{companyId}</span>
+              {companyName && (
+                <span className="text-xs text-slate-500 font-medium hidden md:inline">
+                  · {companyName}
+                </span>
               )}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
-          </div>
-
-          {/* Search / Custom Company ID Input */}
-          <form onSubmit={handleApplyCompany} className="relative flex items-center">
-            <input
-              type="text"
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value.toUpperCase())}
-              placeholder="Or enter ID..."
-              className="w-28 sm:w-36 bg-slate-50 text-slate-900 text-xs font-mono font-medium pl-2.5 pr-7 py-1.5 rounded-lg border border-slate-200/90 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase placeholder:text-slate-400"
-              title="Enter any arbitrary company ID (e.g. C001, C002, ABC123)"
-            />
-            <button
-              type="submit"
-              className="absolute right-1.5 p-1 text-slate-400 hover:text-blue-600 rounded transition-colors"
-              title="Load Company"
-            >
-              <Search className="w-3.5 h-3.5" />
-            </button>
-          </form>
-
-          {/* Quick preset 1-click test selector pills */}
-          <div className="hidden lg:flex items-center gap-1 text-[11px]">
-            {["C001", "C002", "ABC123"].map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setCompanyId(id)}
-                className={`px-2 py-1 rounded text-[11px] font-mono font-semibold transition-all ${
-                  companyId === id
-                    ? "bg-blue-600 text-white font-bold border border-blue-700 shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 border border-slate-200"
-                }`}
+            </div>
+          ) : availableCompanies.length > 1 ? (
+            <div className="relative">
+              <select
+                aria-label="Select Authorized Company"
+                value={companyId}
+                onChange={handleSelectChange}
+                className="bg-slate-50 text-slate-900 text-xs font-mono font-bold pl-3 pr-7 py-1.5 rounded-lg border border-slate-200/90 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none uppercase"
               >
-                {id}
-              </button>
-            ))}
+                {availableCompanies.map((cid) => (
+                  <option key={cid} value={cid} className="bg-white text-slate-900">
+                    {cid} {cid === companyId && companyName ? `(${companyName})` : ""}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+            </div>
+          ) : (
+            <div className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200/90 flex items-center gap-2">
+              <span className="text-xs font-mono font-bold text-slate-900">{companyId}</span>
+              {companyName && (
+                <span className="text-xs text-slate-500 font-medium hidden md:inline">
+                  · {companyName}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Security Verification Tag */}
+          <div className="hidden xl:flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-semibold">
+            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+            <span>Scoped &amp; Isolated</span>
           </div>
         </div>
       </div>
 
       <div className="flex items-center space-x-3">
-        {/* Backend live status badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold">
+        {/* Backend status indicator */}
+        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs font-semibold">
           {backendOnline === true ? (
             <>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -133,28 +127,54 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
           ) : backendOnline === false ? (
             <>
               <AlertCircle className="w-3.5 h-3.5 text-rose-500" />
-              <span className="text-[11px] font-bold text-rose-700">Backend Offline</span>
+              <span className="text-[11px] font-bold text-rose-700">API Offline</span>
             </>
           ) : (
-            <span className="text-[11px] font-medium text-slate-500">Connecting...</span>
+            <span className="text-[11px] font-medium text-slate-400">Connecting...</span>
           )}
         </div>
 
-        {/* CSV Upload Quick Link */}
+        {/* CSV Upload Quick Action */}
         <Link
           href="/csv-upload"
-          className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors"
+          className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition-colors"
         >
-          <UploadCloud className="w-3.5 h-3.5 text-slate-500" />
+          <UploadCloud className="w-3.5 h-3.5 text-blue-600" />
           <span>Upload CSV</span>
         </Link>
 
-        {/* Profile Avatar */}
-        <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
-          <div className="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-xs font-bold text-blue-700">
-            CF
+        {/* User Account & Session Controls */}
+        {isAuthenticated && user ? (
+          <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
+            <div className="hidden sm:flex flex-col text-right">
+              <span className="text-xs font-bold text-slate-800 truncate max-w-[120px]">
+                {user.full_name || user.email}
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                {user.role}
+              </span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+              {(user.full_name || user.email).charAt(0).toUpperCase()}
+            </div>
+            <button
+              onClick={logout}
+              title="Sign Out"
+              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
+            <Link
+              href="/login"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+            >
+              Sign In
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -12,6 +12,7 @@ import {
   Info,
   Building2,
   ChevronRight,
+  UploadCloud,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -31,6 +32,7 @@ import { ChartCard } from "@/components/ChartCard";
 import { RiskBadge } from "@/components/RiskBadge";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { EmptyState } from "@/components/EmptyState";
 import { useCompany } from "@/lib/CompanyContext";
 import { getCompanyAnalysis, CompanyAnalysisResponse } from "@/lib/api";
 
@@ -83,15 +85,51 @@ export default function RiskAnalysisPage() {
   }
 
   if (error || !data) {
+    const isNoRecords =
+      error?.toLowerCase().includes("no financial records") ||
+      error?.toLowerCase().includes("not found");
+
+    if (isNoRecords) {
+      return (
+        <DashboardLayout>
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                  Financial Risk Intelligence &amp; Rule Engine
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold border border-blue-200">
+                    {companyId}
+                  </span>
+                </h1>
+                <p className="text-xs text-slate-500 mt-1">
+                  Workspace isolated for {companyId}. No financial statements uploaded yet.
+                </p>
+              </div>
+            </div>
+
+            <EmptyState
+              title={`No Financial Statements Found for ${companyId}`}
+              description="Upload your company's quarterly statements CSV to execute Random Forest ML risk classification, Forward Chaining risk detection, and Backward Chaining explanations."
+              action={
+                <Link
+                  href="/csv-upload"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Statement CSV</span>
+                </Link>
+              }
+            />
+          </div>
+        </DashboardLayout>
+      );
+    }
+
     return (
       <DashboardLayout>
         <ErrorState
-          title={
-            error?.includes("not found")
-              ? `Company ${companyId} Not Found`
-              : "Unable to connect to Smart CFO backend."
-          }
-          message={error || "No financial records available for this company."}
+          title="Unable to connect to Smart CFO backend"
+          message={error || "Failed to load risk analysis data."}
           onRetry={() => {
             setLoading(true);
             setError(null);

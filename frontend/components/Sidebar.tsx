@@ -15,7 +15,9 @@ import {
   UploadCloud,
   ChevronRight,
   Sparkles,
+  Building2,
 } from "lucide-react";
+import { useCompany } from "@/lib/CompanyContext";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -69,19 +71,20 @@ export const navigationItems = [
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { companyId, companyName } = useCompany();
 
   return (
     <>
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-2xs lg:hidden"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-slate-200/90 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-xs ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-slate-200/90 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-2xs ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -102,22 +105,40 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </Link>
         </div>
 
+        {/* Company Active Pill */}
+        <div className="px-4 py-3 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center space-x-2 min-w-0">
+            <Building2 className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+            <div className="truncate">
+              <div className="text-[11px] font-mono font-bold text-slate-900 truncate">
+                {companyId}
+              </div>
+              <div className="text-[10px] text-slate-500 truncate">
+                {companyName}
+              </div>
+            </div>
+          </div>
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-700">
+            Active
+          </span>
+        </div>
+
         {/* Upload Quick Action */}
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="p-3 border-b border-slate-100 bg-white">
           <Link
             href="/csv-upload"
-            className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-blue-700 transition-all text-xs font-bold group shadow-xs"
+            className="flex items-center justify-between w-full px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100/80 border border-blue-200 text-blue-700 transition-all text-xs font-bold group shadow-2xs"
           >
             <div className="flex items-center space-x-2">
               <UploadCloud className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
-              <span>Upload Financial CSV</span>
+              <span>Upload Statements</span>
             </div>
             <ChevronRight className="w-3.5 h-3.5 text-blue-500/70" />
           </Link>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -132,7 +153,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={onClose}
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   isActive
-                    ? "bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-bold shadow-xs"
+                    ? "bg-blue-50 text-blue-700 border-l-4 border-blue-600 font-bold shadow-2xs"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
                 }`}
               >

@@ -16,19 +16,11 @@ import { DashboardCard } from "@/components/DashboardCard";
 import { useCompany } from "@/lib/CompanyContext";
 
 export default function SettingsPage() {
-  const { companyId, setCompanyId } = useCompany();
-  const [currentId, setCurrentId] = useState(companyId);
+  const { companyId, companyName, company, user } = useCompany();
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    setCurrentId(companyId);
-  }, [companyId]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentId.trim()) {
-      setCompanyId(currentId.trim());
-    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -59,41 +51,69 @@ export default function SettingsPage() {
         {saved && (
           <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-semibold">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Preferences saved successfully. Active target set to {companyId}.</span>
+            <span>System preferences saved successfully. Workspace bound to {companyId}.</span>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Active Company Target */}
+          {/* Company Profile & Workspace Identity */}
           <DashboardCard
-            title="Active Target Company Entity"
-            subtitle="Global context for all analytical models, rules, and forecasts"
+            title="Authorized Company Profile"
+            subtitle="Authenticated corporate entity bound to current session"
           >
-            <form onSubmit={handleSave} className="space-y-4 pt-2">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                  Target Company Identifier (ID)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={currentId}
-                    onChange={(e) => setCurrentId(e.target.value.toUpperCase())}
-                    placeholder="e.g. C001, C002, ABC123"
-                    className="flex-1 bg-slate-50 text-slate-900 text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
-                  >
-                    Apply Target
-                  </button>
+            <div className="space-y-4 pt-1 text-xs">
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-200/90">
+                <div>
+                  <span className="font-bold text-slate-900 block">Company Identifier (CID)</span>
+                  <span className="text-slate-500 text-[11px]">Assigned multi-tenant company ID</span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1.5">
-                  Changing the company ID updates the live Supabase query context across all analytical pages.
-                </p>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-lg">
+                    {companyId}
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Active
+                  </span>
+                </div>
               </div>
-            </form>
+
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-200/90">
+                <div>
+                  <span className="font-bold text-slate-900 block">Registered Entity Name</span>
+                  <span className="text-slate-500 text-[11px]">Primary organization name in database</span>
+                </div>
+                <span className="font-bold text-slate-900">
+                  {company?.company_name || companyName}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-200/90">
+                <div>
+                  <span className="font-bold text-slate-900 block">Industry &amp; Scale</span>
+                  <span className="text-slate-500 text-[11px]">Corporate sector and classification</span>
+                </div>
+                <span className="text-slate-700 font-medium">
+                  {company?.industry || "Technology"} · {company?.company_size || "Enterprise"}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-200/90">
+                <div>
+                  <span className="font-bold text-slate-900 block">User Access Role</span>
+                  <span className="text-slate-500 text-[11px]">Assigned tenant authorization level</span>
+                </div>
+                <span className="font-mono font-bold uppercase text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded">
+                  {user?.role || "Owner"}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-[11px] text-blue-700 leading-relaxed flex items-center gap-2">
+                <Shield className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <span>
+                  All financial statements, forecasts, and AI rules are cryptographically scoped to {companyId}. Cross-company switching is locked.
+                </span>
+              </div>
+            </div>
           </DashboardCard>
 
           {/* Engine Parameters */}

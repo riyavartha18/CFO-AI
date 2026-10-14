@@ -10,17 +10,17 @@ interface EmptyStateProps {
 
 export function EmptyState({
   title = "No financial records found",
-  description = "Upload quarterly financial statements or select a different company identifier to view metrics.",
+  description = "Upload quarterly financial statements to start monitoring enterprise risk and forecasting.",
   action,
   icon,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl bg-[#121620]/60 border border-zinc-800/80 border-dashed">
-      <div className="p-3.5 rounded-full bg-zinc-800/80 text-zinc-400 mb-4">
-        {icon || <FolderOpen className="w-6 h-6 text-orange-400/80" />}
+    <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-white border border-slate-200/90 border-dashed shadow-sm">
+      <div className="p-4 rounded-2xl bg-blue-50 text-blue-600 mb-4 border border-blue-100 shadow-2xs">
+        {icon || <FolderOpen className="w-8 h-8 text-blue-600" />}
       </div>
-      <h4 className="text-sm font-semibold text-zinc-200">{title}</h4>
-      <p className="text-xs text-zinc-400 mt-1 max-w-md leading-relaxed">
+      <h4 className="text-base font-bold text-slate-900">{title}</h4>
+      <p className="text-xs text-slate-500 mt-1.5 max-w-md leading-relaxed">
         {description}
       </p>
       {action && <div className="mt-5">{action}</div>}

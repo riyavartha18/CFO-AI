@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useCompany } from "@/lib/CompanyContext";
 import { AnomalyDetailModal } from "@/components/AnomalyDetailModal";
+import { EmptyState } from "@/components/EmptyState";
 import {
   getAnomalyOverview,
   scanAnomalies,
@@ -22,6 +24,7 @@ import {
   AlertCircle,
   Info,
   CheckCircle2,
+  UploadCloud,
   PieChart as PieChartIcon,
 } from "lucide-react";
 import {
@@ -317,21 +320,11 @@ export default function AnomalyDetectionOverviewPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Company Selector */}
+            {/* Company Identity */}
             <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200/90 rounded-xl px-3.5 py-2">
               <Building2 className="w-4 h-4 text-blue-600" />
               <span className="text-xs font-semibold text-slate-600">Company:</span>
-              <select
-                value={companyId}
-                onChange={(e) => setCompanyId(e.target.value)}
-                className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
-              >
-                {availableCompanies.map((c) => (
-                  <option key={c} value={c} className="bg-white text-slate-900">
-                    {c}
-                  </option>
-                ))}
-              </select>
+              <span className="text-xs font-mono font-bold text-slate-900">{companyId}</span>
             </div>
 
             {/* Historical Period Filter */}
@@ -384,17 +377,33 @@ export default function AnomalyDetectionOverviewPage() {
           </div>
         )}
 
-        {/* Error State */}
+        {/* Error State or Empty Records State */}
         {error && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-              <span>{error}</span>
+          error?.toLowerCase().includes("not found") || error?.toLowerCase().includes("no financial records") ? (
+            <EmptyState
+              title={`No Financial Statements Recorded for ${companyId}`}
+              description="Upload your company's quarterly statement CSV in the standardized 20-column format to generate Isolation Forest ML anomaly scores and multidimensional outlier detection."
+              action={
+                <Link
+                  href="/csv-upload"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Financial Statement CSV</span>
+                </Link>
+              }
+            />
+          ) : (
+            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{error}</span>
+              </div>
+              <button onClick={() => loadData(companyId)} className="underline hover:text-rose-900 font-medium cursor-pointer">
+                Retry
+              </button>
             </div>
-            <button onClick={() => loadData(companyId)} className="underline hover:text-rose-900 font-medium cursor-pointer">
-              Retry
-            </button>
-          </div>
+          )
         )}
 
         {/* Loading State */}

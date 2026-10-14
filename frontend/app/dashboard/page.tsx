@@ -33,11 +33,12 @@ import { RiskBadge } from "@/components/RiskBadge";
 import { Button } from "@/components/Button";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { EmptyState } from "@/components/EmptyState";
 import { useCompany } from "@/lib/CompanyContext";
 import { getCompanyAnalysis, CompanyAnalysisResponse } from "@/lib/api";
 
 export default function DashboardPage() {
-  const { companyId } = useCompany();
+  const { companyId, companyName } = useCompany();
   const [data, setData] = useState<CompanyAnalysisResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,15 +80,52 @@ export default function DashboardPage() {
   }
 
   if (error || !data) {
+    const isNoRecords =
+      error?.toLowerCase().includes("no financial records") ||
+      error?.toLowerCase().includes("not found") ||
+      error?.toLowerCase().includes("upload quarterly");
+
+    if (isNoRecords) {
+      return (
+        <DashboardLayout>
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                  Executive Financial Overview
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold border border-blue-200">
+                    {companyId}
+                  </span>
+                </h1>
+                <p className="text-xs text-slate-500 mt-1">
+                  Workspace isolated for {companyName || companyId}. Ready for quarterly financial statement upload.
+                </p>
+              </div>
+            </div>
+
+            <EmptyState
+              title={`No Financial Statements Recorded for ${companyId}`}
+              description="Upload your company's quarterly statement CSV in the standardized 20-column format to generate ML risk classifications, revenue projections, cash flow forecasts, and anomaly detection."
+              action={
+                <Link
+                  href="/csv-upload"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Financial Statement CSV</span>
+                </Link>
+              }
+            />
+          </div>
+        </DashboardLayout>
+      );
+    }
+
     return (
       <DashboardLayout>
         <ErrorState
-          title={
-            error?.includes("not found")
-              ? `Company ${companyId} Not Found`
-              : "Unable to connect to Smart CFO backend."
-          }
-          message={error || "No financial records available for this company."}
+          title="Unable to connect to Smart CFO backend"
+          message={error || "Could not retrieve records from database."}
           onRetry={() => {
             setLoading(true);
             setError(null);

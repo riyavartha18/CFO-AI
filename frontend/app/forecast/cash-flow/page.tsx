@@ -16,6 +16,7 @@ import {
   Info,
   Calendar,
   Layers,
+  UploadCloud,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -34,6 +35,7 @@ import { DashboardCard } from "@/components/DashboardCard";
 import { ChartCard } from "@/components/ChartCard";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { EmptyState } from "@/components/EmptyState";
 import { useCompany } from "@/lib/CompanyContext";
 import { getCompanyCashFlowForecast, CashFlowForecastResponse } from "@/lib/api";
 
@@ -164,13 +166,29 @@ export default function CashFlowForecastPage() {
           />
         )}
 
-        {/* Error State */}
+        {/* Error State or Empty Records State */}
         {error && (
-          <ErrorState
-            title={`Unable to calculate cash flow forecast for ${companyId}`}
-            message={error}
-            onRetry={() => fetchData(companyId)}
-          />
+          error?.toLowerCase().includes("not found") || error?.toLowerCase().includes("insufficient") || error?.toLowerCase().includes("no financial records") ? (
+            <EmptyState
+              title={`No Historical Cash Flow Data for ${companyId}`}
+              description="Upload your company's quarterly financial statements CSV to generate 4-quarter operating cash flow projections and out-of-sample backtesting."
+              action={
+                <Link
+                  href="/csv-upload"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs shadow-sm transition-all"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Statement CSV</span>
+                </Link>
+              }
+            />
+          ) : (
+            <ErrorState
+              title={`Unable to calculate cash flow forecast for ${companyId}`}
+              message={error}
+              onRetry={() => fetchData(companyId)}
+            />
+          )
         )}
 
         {/* Main Content */}
