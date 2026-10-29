@@ -1,3 +1,5 @@
+# CFO-AI
+Smart CFO is an AI-powered financial intelligence and decision-support platform that analyzes company financial data, detects financial risks using Machine Learning and rule-based reasoning, provides explainable insights, and supports CFO-level decision making.
 # SMART CFO
 
 Smart CFO is an enterprise financial risk intelligence system combining Machine Learning risk classification, expert rule engine reasoning (forward and backward chaining), and financial data validation for multi-company financial analysis.
